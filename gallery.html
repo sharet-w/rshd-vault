@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rashad's vault — Gallery</title>
+<style>
+  :root {
+    --bg: #0a0a0f; --card-bg: rgba(255, 255, 255, 0.05); --card-border: rgba(255, 255, 255, 0.10);
+    --glass: rgba(255, 255, 255, 0.06); --glass-hover: rgba(255, 255, 255, 0.11);
+    --text-primary: #f5f5f7; --text-secondary: rgba(245, 245, 247, 0.55); --text-faint: rgba(245, 245, 247, 0.35);
+    --accent: #0a84ff; --accent-glow: rgba(10, 132, 255, 0.35); --star: #ffd60a; --blur: saturate(160%) blur(24px); --radius: 18px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif; min-height: 100vh; background: var(--bg); color: var(--text-primary); }
+  .blob { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.28; pointer-events: none; animation: drift 22s ease-in-out infinite; }
+  .blob.b1 { width: 560px; height: 560px; background: #3a2d8f; top: -18%; left: -10%; }
+  .blob.b2 { width: 480px; height: 480px; background: #0a3d62; bottom: -20%; right: -10%; animation-delay: -8s; }
+  .blob.b3 { width: 380px; height: 380px; background: #6d1b5e; top: 45%; left: 55%; opacity: 0.2; animation-delay: -14s; }
+  @keyframes drift { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-40px) scale(1.1); } }
+  body::after { content: ""; position: fixed; inset: 0; z-index: 0; background-image: radial-gradient(rgba(255,255,255,0.022) 1px, transparent 1px); background-size: 26px 26px; pointer-events: none; }
+
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px 36px; background: rgba(10, 10, 15, 0.72); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 19px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+  .brand h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; background: linear-gradient(180deg, #ffffff 35%, rgba(255,255,255,0.55)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .brand .count { font-size: 12.5px; color: var(--text-faint); font-weight: 500; margin-top: 1px; }
+  .topbar-actions { display: flex; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-primary); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.18s ease; backdrop-filter: var(--blur); }
+  .btn:hover { background: var(--glass-hover); transform: translateY(-1px); }
+  .btn:active { transform: scale(0.96); }
+  .btn.primary { background: var(--accent); border-color: transparent; box-shadow: 0 4px 18px var(--accent-glow); }
+  .btn.primary:hover { background: #2492ff; }
+  .btn svg { stroke: currentColor; }
+
+  .filterbar { position: sticky; top: 71px; z-index: 40; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 36px; background: rgba(10,10,15,0.6); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .filterbar label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-faint); margin-right: 2px; }
+  select, .search-input { font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-primary); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; outline: none; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  select:hover, .search-input:hover { background: var(--glass-hover); }
+  select:focus, .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(10,132,255,0.18); }
+  select option { background: #16161d; color: var(--text-primary); }
+  /* ============ COMPACT GLASS SEARCH CAPSULE ============ */
+
+.search-box {
+  width: 190px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.search-box:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.search-box:focus-within {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.20);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.search-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: rgba(245, 245, 247, 0.48);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.search-input,
+.search-input:hover,
+.search-input:focus {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  cursor: text;
+}
+
+.search-input::placeholder {
+  color: var(--text-faint);
+  opacity: 1;
+}
+
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button,
+.search-input::-webkit-search-results-button,
+.search-input::-webkit-search-results-decoration {
+  display: none;
+}
+  .rating-filter { display: flex; align-items: center; gap: 4px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 5px 10px; }
+  .rating-filter button { background: none; border: none; font-size: 15px; cursor: pointer; color: rgba(245,245,247,0.25); transition: transform 0.12s, color 0.12s; padding: 2px; }
+  .rating-filter button.on { color: var(--star); text-shadow: 0 0 10px rgba(255,214,10,0.5); }
+  .rating-filter button:hover { transform: scale(1.2); }
+  .rating-filter .lbl { font-size: 11px; color: var(--text-faint); margin-left: 6px; font-weight: 600; }
+  .tag-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-family: inherit; font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 999px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+  .chip:hover { background: var(--glass-hover); color: var(--text-primary); }
+  .chip.on { background: var(--accent); border-color: transparent; color: #fff; box-shadow: 0 2px 12px var(--accent-glow); }
+  .spacer { flex: 1; }
+  .reset-link { background: none; border: none; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-faint); cursor: pointer; padding: 8px 10px; border-radius: 8px; transition: color 0.15s; }
+  .reset-link:hover { color: var(--danger, #ff453a); }
+
+  .grid-wrap { position: relative; z-index: 1; padding: 30px 36px 60px; max-width: 1500px; margin: 0 auto; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+  .card { position: relative; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4 / 3; background: var(--card-bg); border: 1px solid var(--card-border); cursor: pointer; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s; animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .card:hover { transform: translateY(-5px) scale(1.015); border-color: rgba(255,255,255,0.22); box-shadow: 0 22px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06); }
+  .card .thumb { position: absolute; inset: 0; background-size: cover; background-position: center; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+  .card:hover .thumb { transform: scale(1.07); }
+  .card .thumb.gradient { display: flex; align-items: center; justify-content: center; font-size: 54px; }
+  .card .badge-video { position: absolute; top: 12px; right: 12px; z-index: 3; display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #fff; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(8px); }
+  .card .overlay { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 40px 16px 14px; background: linear-gradient(180deg, transparent, rgba(5,5,10,0.85)); transform: translateY(6px); opacity: 0.92; transition: transform 0.3s ease, opacity 0.3s ease; }
+  .card:hover .overlay { transform: translateY(0); opacity: 1; }
+  .overlay .o-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.2px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .overlay .o-meta { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: rgba(245,245,247,0.6); }
+  .overlay .stars { color: var(--star); font-size: 11px; letter-spacing: 1px; }
+  .overlay .o-tags { margin-top: 6px; display: flex; gap: 5px; flex-wrap: wrap; }
+  .overlay .o-tag { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.75); }
+  .card .has-comment { position: absolute; top: 12px; left: 12px; z-index: 3; font-size: 10px; font-weight: 700; color: #fff; background: rgba(10,132,255,0.75); border: 1px solid rgba(255,255,255,0.25); padding: 4px 9px; border-radius: 999px; backdrop-filter: blur(8px); }
+  .empty { text-align: center; padding: 90px 20px; color: var(--text-faint); }
+  .empty .big { font-size: 52px; margin-bottom: 16px; }
+  .empty h2 { color: var(--text-secondary); font-size: 18px; margin-bottom: 6px; }
+  .empty p { font-size: 13.5px; }
+  ::-webkit-scrollbar { width: 10px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 999px; border: 2px solid var(--bg); }
+
+  /* Strong blur only: no veil, dots, particles or cover text. */
+  .is-covered .thumb { filter:blur(50px); transform:scale(1.12); }
+  .is-covered:hover .thumb { transform:scale(1.12); }
+  @media(prefers-reduced-motion:reduce) { .thumb { transition:none !important; } }
+ 
+  /* ============ METALLIC MEDIA SELECTION ============ */
+
+/* Selected image: silver metallic border and glow */
+.card.media-selected,
+.t-card.media-selected {
+  border: 2px solid #dce2ea !important;
+
+  outline: 2px solid #89939f !important;
+  outline-offset: -5px;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.65),
+    inset 0 0 14px rgba(225,232,240,0.12),
+    0 0 0 1px rgba(230,236,245,0.75),
+    0 0 12px rgba(185,198,215,0.55),
+    0 0 28px rgba(160,178,200,0.30) !important;
+}
+
+/* Preserve the metallic glow while hovering */
+.card.media-selected:hover,
+.t-card.media-selected:hover {
+  border-color: #f2f5fa !important;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.75),
+    inset 0 0 14px rgba(225,232,240,0.15),
+    0 0 0 1px rgba(230,236,245,0.85),
+    0 0 16px rgba(185,198,215,0.65),
+    0 0 32px rgba(160,178,200,0.38) !important;
+}
+
+/* One selection badge in the top-left corner */
+.selection-check {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 30;
+
+  width: 34px;
+  height: 34px;
+
+  display: block;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: scale(0.75);
+  transform-origin: center;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
+}
+
+/* SVG fills its container */
+.selection-check svg {
+  display: block;
+
+  width: 34px;
+  height: 34px;
+
+  overflow: visible;
+
+  filter:
+    drop-shadow(0 0 4px rgba(235,242,255,0.7))
+    drop-shadow(0 0 9px rgba(175,190,210,0.4));
+}
+
+/* Reveal exactly one badge when selected */
+.media-selected .selection-check {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+
+/* Right-click menu */
+.media-context-menu {
+  position: fixed;
+  z-index: 99999;
+
+  display: none;
+  min-width: 190px;
+
+  padding: 7px;
+  border-radius: 14px;
+
+  background: rgba(23, 27, 35, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.media-context-menu.visible {
+  display: grid;
+  gap: 4px;
+}
+/* ============ CONTEXT MENU CONTAINER ============ */
+
+.media-context-menu {
+  position: fixed;
+  z-index: 99999;
+
+  display: none;
+
+  min-width: 190px;
+  padding: 7px;
+
+  border-radius: 14px;
+
+  background: rgba(23, 27, 35, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.media-context-menu.visible {
+  display: grid;
+  gap: 4px;
+}
+.media-context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+
+  border: none;
+  border-radius: 10px;
+
+  padding: 12px 14px;
+
+  background: transparent;
+  color: #f5f5f7;
+
+  text-align: left;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.media-context-menu button svg {
+  width: 19px;
+  height: 19px;
+
+  flex-shrink: 0;
+
+  stroke: currentColor;
+}
+
+.media-context-menu button:hover {
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+}
+
+.media-context-menu button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.media-context-menu.visible {
+  display: grid;
+  gap: 4px;
+}
+
+.media-context-menu button:hover {
+  background: rgba(255,255,255,.1);
+}
+
+.media-context-menu button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Floating toolbar */
+
+.media-selection-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 25px);
+
+  z-index: 9998;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+  border-radius: 17px;
+
+  background: rgba(22,28,37,.95);
+  border: 1px solid rgba(255,255,255,.15);
+
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+
+  box-shadow: 0 20px 55px rgba(0,0,0,.55);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .25s, transform .25s, visibility .25s;
+}
+
+.media-selection-toolbar.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.media-selection-toolbar span {
+  white-space: nowrap;
+  color: #a8b7c9;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.media-selection-toolbar button {
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+
+  background: rgba(255,255,255,.08);
+  color: white;
+
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.media-selection-toolbar button:hover {
+  background: rgba(255,255,255,.16);
+}
+
+.media-selection-toolbar .danger-action {
+  background: rgba(255,69,58,.13);
+  color: #ff7770;
+  border-color: rgba(255,69,58,.28);
+}
+/* ============ FULLSCREEN LOCK ANIMATION ============ */
+
+.lock-animation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(5, 7, 14, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.lock-animation-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.lock-animation-overlay img {
+  width: 280px;
+  height: 280px;
+  object-fit: contain;
+  display: block;
+}
+</style>
+</head>
+<body>
+<!-- Fullscreen lock animation -->
+<div class="lock-animation-overlay" id="lockAnimationOverlay">
+  <img
+    id="lockAnimationIcon"
+    alt="Locking vault"
+    width="280"
+    height="280"
+  >
+</div>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+         <svg xmlns="http://www.w3.org/2000/svg"
+     width="52"
+     height="52"
+     viewBox="0 0 320 320"
+     role="img"
+     aria-label="USB Vault">
+
+<defs>
+
+  <!-- Brushed metallic connector -->
+  <linearGradient id="usb-steel" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#8d91a1"/>
+    <stop offset="16%" stop-color="#f4f6ff"/>
+    <stop offset="42%" stop-color="#c8cbd7"/>
+    <stop offset="75%" stop-color="#969aa9"/>
+    <stop offset="100%" stop-color="#e3e6f1"/>
+  </linearGradient>
+
+  <!-- Metallic side -->
+  <linearGradient id="usb-side" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#9fa3b2"/>
+    <stop offset="100%" stop-color="#535766"/>
+  </linearGradient>
+
+  <!-- 3D dark casing -->
+  <linearGradient id="usb-shell" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#62636b"/>
+    <stop offset="35%" stop-color="#393b43"/>
+    <stop offset="100%" stop-color="#14151b"/>
+  </linearGradient>
+
+  <!-- Side of the casing -->
+  <linearGradient id="usb-shell-side" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#33353e"/>
+    <stop offset="100%" stop-color="#090a0e"/>
+  </linearGradient>
+
+  <!-- Metallic violet collar -->
+  <linearGradient id="usb-collar" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#c2c0ff"/>
+    <stop offset="45%" stop-color="#8583c8"/>
+    <stop offset="100%" stop-color="#55538d"/>
+  </linearGradient>
+
+  <!-- LED -->
+  <radialGradient id="usb-led">
+    <stop offset="0%" stop-color="#baffc9"/>
+    <stop offset="45%" stop-color="#35ff72"/>
+    <stop offset="100%" stop-color="#04a83d"/>
+  </radialGradient>
+
+  <filter id="usb-shadow" x="-50%" y="-50%"
+          width="200%" height="200%">
+    <feDropShadow dx="0" dy="8"
+                  stdDeviation="7"
+                  flood-color="#000"
+                  flood-opacity=".35"/>
+  </filter>
+
+  <filter id="usb-led-glow" x="-250%" y="-250%"
+          width="600%" height="600%">
+    <feGaussianBlur stdDeviation="9"/>
+  </filter>
+
+</defs>
+
+<style>
+  .usb-led-light {
+    animation: usbBlink 2s ease-in-out infinite;
+    transform-origin: 160px 231px;
+  }
+
+  .usb-led-halo {
+    animation: usbGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes usbBlink {
+    0%, 100% { opacity: 1; }
+    45% { opacity: .22; }
+    60% { opacity: .22; }
+  }
+
+  @keyframes usbGlow {
+    0%, 100% { opacity: .85; }
+    45%, 60% { opacity: .08; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .usb-led-light,
+    .usb-led-halo {
+      animation: none;
+    }
+  }
+</style>
+
+<!-- Diagonal orientation -->
+<g transform="rotate(45 160 160)"
+   filter="url(#usb-shadow)">
+
+  <!-- METALLIC USB CONNECTOR -->
+
+  <!-- Top thickness -->
+  <path d="M126 33 L140 23 H207 L192 33 Z"
+        fill="#f1f3ff"/>
+
+  <!-- Side thickness -->
+  <path d="M192 33 L207 23 V118
+           L192 128 Z"
+        fill="url(#usb-side)"/>
+
+  <!-- Main connector face -->
+  <path d="M126 33 H192 V128 H126 Z"
+        fill="url(#usb-steel)"/>
+
+  <!-- Brushed steel reflection -->
+  <path d="M130 36 H135 V124 H130 Z"
+        fill="#ffffff"
+        opacity=".24"/>
+
+  <path d="M156 35 H160 V125 H156 Z"
+        fill="#ffffff"
+        opacity=".13"/>
+
+  <!-- Connector edge -->
+  <path d="M126 34 V127 H192"
+        fill="none"
+        stroke="#ffffff"
+        stroke-opacity=".45"
+        stroke-width="1.3"/>
+
+  <!-- Two recessed connector holes -->
+  <rect x="139" y="61"
+        width="14" height="19"
+        rx="2"
+        fill="#30323a"/>
+
+  <rect x="168" y="61"
+        width="14" height="19"
+        rx="2"
+        fill="#30323a"/>
+
+  <!-- Hole inner highlights -->
+  <path d="M140 79 V63 H152
+           M169 79 V63 H181"
+        fill="none"
+        stroke="#8c90a0"
+        stroke-width="1"
+        opacity=".7"/>
+
+  <!-- CONNECTOR COLLAR -->
+
+  <!-- Collar right-side depth -->
+  <path d="M207 118 L220 108
+           V137 L207 147 Z"
+        fill="#484672"/>
+
+  <!-- Main collar -->
+  <path d="M110 118 H207 V147 H110 Z"
+        fill="url(#usb-collar)"/>
+
+  <!-- Collar top reflective strip -->
+  <path d="M110 118 H207 V121 H110 Z"
+        fill="#efedff"
+        opacity=".7"/>
+
+  <!-- Collar lower bevel -->
+  <path d="M110 143 H207 V147 H110 Z"
+        fill="#46446e"/>
+
+  <!-- 3D USB CASING -->
+
+  <!-- Dark side wall -->
+  <path d="
+    M208 147
+    L220 137
+    V235
+    C220 269 197 293 171 296
+    L159 290
+    C185 290 208 273 208 242
+    Z"
+    fill="url(#usb-shell-side)"/>
+
+  <!-- Main rounded body -->
+  <path d="
+    M110 147
+    H208
+    V242
+    C208 273 185 290 159 290
+    C131 290 110 270 110 243
+    Z"
+    fill="url(#usb-shell)"/>
+
+  <!-- Upper-left metallic face -->
+  <path d="
+    M110 147
+    H159
+    V290
+    C131 290 110 270 110 243
+    Z"
+    fill="#ffffff"
+    opacity=".075"/>
+
+  <!-- Right bevel highlight -->
+  <path d="
+    M205 148
+    V241
+    C205 269 184 286 161 287"
+    fill="none"
+    stroke="#777985"
+    stroke-width="1.3"
+    opacity=".4"/>
+
+  <!-- Left edge reflection -->
+  <path d="
+    M113 151
+    V241
+    C113 263 129 283 149 286"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="1.5"
+    opacity=".17"/>
+
+  <!-- Subtle brushed casing reflection -->
+  <path d="
+    M119 155
+    H125
+    V246
+    C125 256 128 263 132 269
+    C123 262 119 252 119 242
+    Z"
+    fill="#ffffff"
+    opacity=".045"/>
+
+  <!-- LED recessed socket -->
+  <circle cx="160" cy="231" r="16"
+          fill="#0b0d12"
+          stroke="#666a73"
+          stroke-width="1.2"/>
+
+  <!-- Green blinking glow -->
+  <g class="usb-led-halo">
+    <circle cx="160" cy="231" r="20"
+            fill="#19ff60"
+            filter="url(#usb-led-glow)"/>
+  </g>
+
+  <!-- Green blinking LED -->
+  <g class="usb-led-light">
+
+    <circle cx="160" cy="231" r="12"
+            fill="url(#usb-led)"/>
+
+    <!-- LED glossy reflection -->
+    <ellipse cx="156" cy="226"
+             rx="4" ry="2.5"
+             fill="#ffffff"
+             opacity=".75"/>
+
+  </g>
+
+</g>
+
+</svg>
+      </div>
+      <div>
+        <h1>rashd's Vault</h1>
+        <div class="count" id="countLabel">— memories</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="timelineBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg> Timeline
+      </button>
+      <button class="btn primary" id="addBtn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg> Add Memory
+      </button>
+      <button class="btn" id="lockBtn" title="Lock journal">
+       <svg xmlns="http://www.w3.org/2000/svg"
+     width="14.4"
+     height="16.8"
+     viewBox="0 0 494 586"
+     role="img"
+     aria-label="Lock icon">
+
+  <!-- traced lock shape -->
+  <path fill="#ffffff" fill-rule="evenodd" d="
+    M 322.0 501.5
+    L 167.0 501.5
+    L 151.0 498.5
+    L 125.0 486.5
+    L 105.5 469.0
+    L 94.5 452.0
+    L 86.5 431.0
+    L 84.5 419.0
+    L 84.5 255.0
+    L 87.5 244.0
+    L 93.5 233.0
+    L 104.0 222.5
+    L 115.0 216.5
+    L 132.5 213.0
+    L 132.5 151.0
+    L 134.5 138.0
+    L 141.5 117.0
+    L 152.5 98.0
+    L 164.0 84.5
+    L 183.0 69.5
+    L 196.0 62.5
+    L 217.0 55.5
+    L 230.0 53.5
+    L 259.0 53.5
+    L 276.0 56.5
+    L 301.0 66.5
+    L 316.0 76.5
+    L 325.5 85.0
+    L 343.5 109.0
+    L 354.5 138.0
+    L 356.5 151.0
+    L 356.5 213.0
+    L 368.0 214.5
+    L 385.0 222.5
+    L 395.5 233.0
+    L 403.5 250.0
+    L 404.5 419.0
+    L 401.5 435.0
+    L 389.5 461.0
+    L 372.0 480.5
+    L 364.0 486.5
+    L 347.0 495.5
+    Z
+
+    M 324.5 213.0
+    L 324.5 153.0
+    L 322.5 142.0
+    L 319.5 133.0
+    L 311.5 118.0
+    L 296.0 101.5
+    L 289.0 96.5
+    L 277.0 90.5
+    L 257.0 85.5
+    L 225.0 86.5
+    L 212.0 90.5
+    L 197.0 98.5
+    L 180.5 114.0
+    L 175.5 121.0
+    L 169.5 133.0
+    L 164.5 153.0
+    L 165.0 213.5
+    Z
+
+    M 320.5 469.0
+    L 338.0 464.5
+    L 352.0 455.5
+    L 365.5 439.0
+    L 371.5 423.0
+    L 372.5 258.0
+    L 369.5 252.0
+    L 365.0 247.5
+    L 360.0 245.5
+    L 129.0 245.5
+    L 124.0 247.5
+    L 118.5 253.0
+    L 116.5 258.0
+    L 116.5 417.0
+    L 121.5 435.0
+    L 130.5 449.0
+    L 147.0 462.5
+    L 159.0 467.5
+    L 169.0 469.5
+    Z
+
+    M 248.0 421.5
+    L 241.0 421.5
+    L 236.0 419.5
+    L 229.5 412.0
+    L 228.5 353.0
+    L 222.0 348.5
+    L 217.5 343.0
+    L 212.5 330.0
+    L 213.5 316.0
+    L 218.5 306.0
+    L 228.0 297.5
+    L 238.0 293.5
+    L 251.0 293.5
+    L 264.0 299.5
+    L 272.5 309.0
+    L 276.5 320.0
+    L 276.5 330.0
+    L 274.5 337.0
+    L 267.5 348.0
+    L 260.5 353.0
+    L 260.5 409.0
+    L 258.5 414.0
+    L 253.0 419.5
+    Z
+  "/>
+</svg> Lock
+      </button>
+    </div>
+  </header>
+
+  <div class="filterbar">
+    <label>Year</label> <select id="fYear"><option value="">All</option></select>
+    <label>Month</label>
+    <select id="fMonth">
+      <option value="">All</option><option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+      <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option>
+      <option value="8">Aug</option><option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+    </select>
+    <label>Min rating</label>
+    <div class="rating-filter" id="fRating">
+      <button data-v="1">★</button><button data-v="2">★</button><button data-v="3">★</button><button data-v="4">★</button><button data-v="5">★</button>
+      <span class="lbl" id="ratingLbl">Any</span>
+    </div>
+    <label>Tag</label>
+    <div class="tag-chips" id="fTags"></div>
+    <div class="spacer"></div>
+    <div class="search-box">
+  <svg
+    class="search-icon"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <circle cx="10.7" cy="10.7" r="6.7"></circle>
+    <path d="M15.8 15.8L21 21"></path>
+  </svg>
+
+  <input
+    class="search-input"
+    id="fSearch"
+    type="search"
+    placeholder="Search"
+    autocomplete="off"
+    aria-label="Search memories"
+  >
+</div>
+    <button class="reset-link" id="resetBtn">Reset</button>
+  </div>
+
+  <main class="grid-wrap">
+    <div class="grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none;">
+      <div class="big">↺</div><h2>Not Found</h2><p>Try clearing a filter or add a new memory.</p>
+    </div>
+  </main>
+
+<script src="storage.js"></script>
+<script src="media-actions.js"></script>
+<script>
+if (!sessionStorage.getItem("rshdKey")) { window.location.replace("lockscreen.html"); }
+
+let entries = [];
+const filters = { year:"", month:"", minRating:0, tag:"", search:"" };
+const grid = document.getElementById("grid");
+const empty = document.getElementById("empty");
+const GRADS = ["linear-gradient(135deg,#667eea,#764ba2)","linear-gradient(135deg,#f093fb,#f5576c)","linear-gradient(135deg,#4facfe,#00f2fe)","linear-gradient(135deg,#43e97b,#38f9d7)"];
+
+window.onload = async () => {
+  await JournalStore.ensureAccess();
+  const data = JournalStore.getData();
+  entries = data.entries.sort((a,b) => b.dateShot.localeCompare(a.dateShot));
+  
+  populateYearFilter();
+  populateTagChips();
+  applyFilters();
+  document.getElementById("countLabel").textContent = `${entries.length} ${entries.length === 1 ? "memory" : "memories"}`;
+};
+
+function populateYearFilter() {
+  const sel = document.getElementById("fYear");
+  const years = [...new Set(entries.map(e => e.dateShot.slice(0,4)))].sort().reverse();
+  years.forEach(y => { const o = document.createElement("option"); o.value = y; o.textContent = y; sel.appendChild(o); });
+}
+
+function populateTagChips() {
+  const wrap = document.getElementById("fTags");
+  const tags = [...new Set(entries.flatMap(e => e.tags || []))].sort();
+  tags.forEach(t => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = "#" + t; b.dataset.tag = t;
+    b.onclick = () => {
+      filters.tag = filters.tag === t ? "" : t;
+      [...wrap.children].forEach(c => c.classList.toggle("on", c.dataset.tag === filters.tag));
+      applyFilters();
+    };
+    wrap.appendChild(b);
+  });
+}
+
+function applyFilters() {
+  const f = filters; const q = f.search.trim().toLowerCase();
+  const shown = entries.filter(e => {
+    if (f.year && e.dateShot.slice(0,4) !== f.year) return false;
+    if (f.month && +e.dateShot.slice(5,7) !== +f.month) return false;
+    if (f.minRating && e.rating < f.minRating) return false;
+    if (f.tag && !(e.tags || []).includes(f.tag)) return false;
+    if (q) {
+      const hay = `${e.title} ${e.location} ${e.device} ${(e.tags||[]).join(" ")}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  renderGrid(shown);
+}
+
+function fmtDate(d) { return new Date(d + "T00:00:00").toLocaleDateString([], { day:"numeric", month:"short", year:"numeric" }); }
+function stars(n) { return "★".repeat(n) + "☆".repeat(5 - n); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+function renderGrid(list) {
+  grid.innerHTML = "";
+  empty.style.display = list.length ? "none" : "block";
+
+  list.forEach(async (e, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+      if (e.blurCover === true) { card.classList.add("is-covered"); card.setAttribute("aria-label", "Blurred memory; click to reveal"); } card.style.animationDelay = `${Math.min(i * 0.04, 0.5)}s`;
+
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    
+    // Load local image via API
+    if (e.fileName) {
+      const url = await JournalStore.getMediaURL(e.fileName);
+      if (url && e.type !== "video") thumb.style.backgroundImage = `url("${url}")`;
+      else { thumb.className = "thumb gradient"; thumb.style.background = e.grad || GRADS[i % GRADS.length]; thumb.textContent = e.emoji || "🖼️"; }
+    } else {
+      thumb.className = "thumb gradient"; thumb.style.background = e.grad || GRADS[i % GRADS.length]; thumb.textContent = e.emoji || "🖼️";
+    }
+    card.appendChild(thumb);
+
+    if (e.type === "video") {
+      card.insertAdjacentHTML("beforeend", `<div class="badge-video"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> VIDEO</div>`);
+    }
+    if (e.comment) {
+      card.insertAdjacentHTML("beforeend", `<div class="has-comment">💬</div>`);
+    }
+
+    const ov = document.createElement("div");
+    ov.className = "overlay";
+    ov.innerHTML = `<div class="o-title">${esc(e.title)}</div><div class="o-meta"><span>${fmtDate(e.dateShot)}</span>·<span>${esc(e.location)}</span><span class="stars">${stars(e.rating)}</span></div>${(e.tags && e.tags.length) ? `<div class="o-tags">${e.tags.map(t=>`<span class="o-tag">#${esc(t)}</span>`).join("")}</div>` : ""}`;
+    card.appendChild(ov);
+
+    card.onclick = () => {
+  if (card.classList.contains("is-covered")) {
+    card.classList.remove("is-covered");
+    card.removeAttribute("aria-label");
+    return; // First click reveals; second click opens
+  }
+
+  window.location.href = `photo.html?id=${e.id}`;
+};
+
+// Add right-click menu and multi-selection
+MediaActions.attach(card, e);
+grid.appendChild(card);
+  });
+}
+
+document.getElementById("fYear").onchange = e => { filters.year = e.target.value; applyFilters(); };
+document.getElementById("fMonth").onchange = e => { filters.month = e.target.value; applyFilters(); };
+document.getElementById("fSearch").oninput = e => { filters.search = e.target.value; applyFilters(); };
+document.getElementById("fRating").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const v = +btn.dataset.v; filters.minRating = (filters.minRating === v) ? 0 : v;
+  document.querySelectorAll("#fRating button").forEach(b => b.classList.toggle("on", +b.dataset.v <= filters.minRating));
+  document.getElementById("ratingLbl").textContent = filters.minRating ? filters.minRating + "+" : "Any";
+  applyFilters();
+});
+document.getElementById("resetBtn").onclick = () => {
+  filters.year = ""; filters.month = ""; filters.minRating = 0; filters.tag = ""; filters.search = "";
+  document.getElementById("fYear").value = ""; document.getElementById("fMonth").value = ""; document.getElementById("fSearch").value = "";
+  document.querySelectorAll("#fRating button").forEach(b => b.classList.remove("on"));
+  document.getElementById("ratingLbl").textContent = "Any"; document.querySelectorAll("#fTags .chip").forEach(c => c.classList.remove("on"));
+  applyFilters();
+};
+
+document.getElementById("addBtn").onclick = () => window.location.href = "upload.html";
+/* ============ NAVIGATION SOUND EFFECTS ============ */
+
+const sfxLock = new Audio("lock.mp3");
+const sfxTimeline = new Audio("timeline.mp3");
+
+sfxLock.volume = 0.75;
+sfxTimeline.volume = 0.65;
+
+// Prevent repeated clicks and duplicate navigation
+let navigating = false;
+
+/* ============ RESET NAVIGATION STATE ============ */
+
+// Handles returning to Gallery using the browser's Back button.
+window.addEventListener("pageshow", () => {
+  navigating = false;
+});
+
+
+/* ============ TIMELINE BUTTON ============ */
+
+document.getElementById("timelineBtn").onclick = () => {
+  if (navigating) return;
+
+  navigating = true;
+
+  sfxTimeline.currentTime = 0;
+  sfxTimeline.play().catch(() => {});
+
+  setTimeout(() => {
+    window.location.assign("timeline.html");
+  }, 450);
+};
+
+
+/* ============ LOCK BUTTON ============ */
+
+document.getElementById("lockBtn").onclick = () => {
+  if (navigating) return;
+
+  navigating = true;
+
+  // Schedule the redirect FIRST so an animation error
+  // cannot prevent the vault from reaching the lockscreen.
+  setTimeout(() => {
+    window.location.replace("lockscreen.html");
+  }, 3000);
+
+  // Remove the active unlock session immediately.
+  sessionStorage.removeItem("rshdKey");
+
+  // Find the animation elements.
+  const overlay = document.getElementById("lockAnimationOverlay");
+  const icon = document.getElementById("lockAnimationIcon");
+
+  // Show animation only when both elements exist.
+  if (overlay && icon) {
+    overlay.classList.add("active");
+
+    icon.removeAttribute("src");
+
+    requestAnimationFrame(() => {
+      icon.src = "Lock Unlock Icon.svg";
+    });
+  } else {
+    console.error("Lock animation overlay or icon is missing.");
+
+    // No animation available: redirect immediately.
+    window.location.replace("lockscreen.html");
+    return;
+  }
+
+  // Synchronize SFX with the closing shackle.
+  setTimeout(() => {
+    sfxLock.currentTime = 0;
+    sfxLock.play().catch(() => {});
+  }, 1800);
+};
+</script>
+</body>
+</html>
