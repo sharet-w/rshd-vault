@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rashd's Vault — Welcome</title>
+<style>
+  /* ============ CLEAN WHITE GLOWING CURSOR ============ */
+  :root {
+   --white-glow-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><defs><filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.2" result="blur"/><feComponentTransfer in="blur"><feFuncA type="linear" slope="0.45"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path d="M3 3l7 18 3-7 7-3L3 3z" fill="%23ffffff" stroke="%23000000" stroke-width="0.7" stroke-linejoin="round" filter="url(%23glow)"/></svg>') 3 3, auto;
+  }
+
+  /* Apply the cursor cleanly to the page and interactive elements */
+  body, .key, .btn, button {
+    cursor: var(--white-glow-cursor) !important;
+  }
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.10);
+    --glass-key: rgba(255, 255, 255, 0.06);
+    --glass-key-hover: rgba(255, 255, 255, 0.12);
+    --text-primary: #f5f5f7;
+    --text-secondary: rgba(245, 245, 247, 0.55);
+    --accent: #FFD700;
+    --accent-glow: rgba(10, 132, 255, 0.35);
+    --danger: #ff453a;
+    --blur: saturate(160%) blur(24px);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    height: 100vh; overflow: hidden; display: flex; align-items: center; justify-content: center;
+    background: var(--bg); color: var(--text-primary);
+  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.35; pointer-events: none; animation: drift 20s ease-in-out infinite; }
+  .blob.b1 { width: 560px; height: 560px; background: #3a2d8f; top: -15%; left: -10%; }
+  .blob.b2 { width: 480px; height: 480px; background: #0a3d62; bottom: -18%; right: -8%; animation-delay: -7s; }
+  .blob.b3 { width: 380px; height: 380px; background: #6d1b5e; top: 40%; left: 55%; opacity: 0.25; animation-delay: -13s; }
+  @keyframes drift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, -40px) scale(1.1); } }
+  body::after { content: ""; position: fixed; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px); background-size: 26px 26px; pointer-events: none; }
+
+  .welcome-card {
+    position: relative; z-index: 2; width: 780px; min-height: 420px; border-radius: 28px;
+    background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; opacity: 0; transform: translateY(26px) scale(0.97); transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .welcome-card.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+  .greeting { padding: 56px 20px 56px 56px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid rgba(255, 255, 255, 0.07); }
+  .emoji-wrap {
+    width: 96px; height: 96px; border-radius: 26px; background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+    border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 12px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 30px;
+  }
+  .emoji { font-size: 52px; display: inline-block; transform-origin: 72% 72%; animation: wave 2.4s ease-in-out infinite; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35)); }
+  @keyframes wave { 0%, 55%, 100% { transform: rotate(0deg); } 8% { transform: rotate(16deg); } 18% { transform: rotate(-8deg); } 28% { transform: rotate(16deg); } 38% { transform: rotate(-4deg); } 46% { transform: rotate(10deg); } }
+  .greeting h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.15; margin-bottom: 12px; background: linear-gradient(180deg, #ffffff 30%, rgba(255,255,255,0.65)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .greeting p { font-size: 15.5px; line-height: 1.6; color: var(--text-secondary); max-width: 300px; }
+  .greeting .brand { margin-top: 34px; display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; color: rgba(245,245,247,0.35); }
+  .brand .dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .passcode { padding: 48px 56px 44px 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .passcode .step-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .passcode .step-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 30px; text-align: center; }
+  .dots { display: flex; gap: 18px; margin-bottom: 34px; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; border: 1.6px solid rgba(245,245,247,0.4); transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .dot.filled { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 14px var(--accent-glow); transform: scale(1.2); }
+  .dot.error { border-color: var(--danger); background: var(--danger); box-shadow: 0 0 14px rgba(255,69,58,0.4); }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 15% { transform: translateX(-12px); } 30% { transform: translateX(10px); } 45% { transform: translateX(-8px); } 60% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
+  .shake { animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+
+  .keypad { display: grid; grid-template-columns: repeat(3, 66px); gap: 13px; }
+  .key { width: 66px; height: 60px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.09); background: var(--glass-key); backdrop-filter: var(--blur); font-family: inherit; font-size: 22px; font-weight: 500; color: var(--text-primary); cursor: pointer; transition: transform 0.1s ease, background 0.18s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
+  .key:hover { background: var(--glass-key-hover); transform: translateY(-2px); }
+  .key:active, .key.pressed { transform: scale(0.93); background: rgba(255,255,255,0.16); }
+  .key.fn { font-size: 12px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-secondary); }
+  .key.fn:hover { color: var(--text-primary); }
+  .key.fn svg { stroke: currentColor; }
+  .hint { margin-top: 22px; font-size: 12.5px; min-height: 18px; color: var(--text-secondary); transition: color 0.3s; }
+  .hint.warn { color: var(--danger); font-weight: 600; }
+  .hint.ok { color: #30d158; font-weight: 600; }
+  /* A slow crack-first transition: the page and backdrop never flash white. */
+  .shatter-layer {
+    position: fixed; inset: 0; z-index: 1000; pointer-events: none;
+    overflow: hidden; perspective: 1100px; isolation: isolate;
+  }
+  .fracture-map { position: absolute; overflow: hidden; border-radius: 28px; }
+  .fracture-map svg { display: block; width: 100%; height: 100%; overflow: hidden; }
+  .glass-piece {
+    position: absolute; transform-origin: center center;
+    will-change: transform, opacity; backface-visibility: visible;
+    filter: drop-shadow(0 4px 7px rgba(0,0,0,.35));
+  }
+  .glass-piece .welcome-card {
+    position: absolute; margin: 0; opacity: 1 !important;
+    transform: none !important; transition: none !important;
+    animation: none !important;
+  }
+  .glass-piece .emoji, .glass-piece .dot-live { animation: none !important; }
+  .glass-piece::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(120deg, rgba(255,255,255,.17), transparent 34%, rgba(175,216,255,.08) 67%, transparent);
+    mix-blend-mode: screen;
+  }
+  .glass-piece svg { position: absolute; inset: 0; overflow: visible; }
+  /* ===== GLASS SHATTER PERFORMANCE FIX ===== */
+
+.glass-piece {
+  filter: none !important;
+}
+
+.glass-piece .welcome-card,
+.glass-piece .key {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.glass-piece .welcome-card {
+  box-shadow: none !important;
+}
+  .glass-splinter {
+    position: absolute; pointer-events: none; will-change: transform, opacity;
+    background: linear-gradient(145deg, rgba(255,255,255,.85),rgba(176,215,255,.20) 54%,rgba(255,255,255,.03));
+    clip-path: polygon(0 0,100% 19%,37% 100%);
+    filter: drop-shadow(0 0 2px rgba(220,243,255,.65));
+  }
+  .impact-glow {
+    position: absolute; width: 110px; height: 110px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.72), rgba(184,221,255,.30) 9%, transparent 63%);
+    transform: translate(-50%,-50%) scale(.1); opacity: 0;
+    mix-blend-mode: screen; pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .blob, .emoji { animation: none; } }
+  .footer { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); font-size: 12px; color: rgba(245,245,247,0.28); letter-spacing: 0.4px; z-index: 2; }
+</style>
+</head>
+<body>
+
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <div class="welcome-card" id="card">
+    <section class="greeting">
+      <div class="emoji-wrap"><span class="emoji" id="emoji">👋</span></div>
+      <h1>Welcome to<br>rashd's Vault</h1>
+      <p>Your personal media, secured locally and accessible anywhere you carry it.</p>
+      <div class="brand"><span class="dot-live"></span> Private · Offline · Yours</div>
+    </section>
+
+    <section class="passcode">
+      <div class="step-title" id="stepTitle">Enter passcode</div>
+      <div class="step-sub" id="stepSub">4-digit code to unlock your vault</div>
+      <div class="dots" id="dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+      <div class="keypad" id="keypad">
+        <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+        <button class="key fn" data-key="clear">CLEAR</button><button class="key" data-key="0">0</button>
+        <button class="key fn" data-key="back" aria-label="Delete">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 5H8l-5 7 5 7h13a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M17 9.5l-5 5M12 9.5l5 5"/>
+          </svg>
+        </button>
+      </div>
+      <p class="hint" id="hint"></p>
+    </section>
+  </div>
+  <div class="footer">ⓘ Nothing LEAVES your drive</div>
+
+<!-- IMPORT NEW ENGINE -->
+<script>
+let entered = "";
+let busy = false;
+let unlocked = false;
+
+const dots = document.querySelectorAll(".dot");
+const card = document.getElementById("card");
+const stepTitle = document.getElementById("stepTitle");
+const stepSub = document.getElementById("stepSub");
+const hint = document.getElementById("hint");
+const emoji = document.getElementById("emoji");
+
+// Load your SFX files
+const sfxClick = new Audio("click.wav");
+const sfxError = new Audio("error.mp3");
+const sfxSuccess = new Audio("success.mp3");
+window.onload = () => {
+
+  card.classList.add("visible");
+
+  stepTitle.textContent = "Enter passcode";
+  stepSub.textContent = "Enter your 4-digit code to unlock your vault";
+  setHint("");
+
+};
+
+function setHint(msg, type = "") { hint.textContent = msg; hint.className = "hint" + (type ? " " + type : ""); }
+function renderDots() { dots.forEach((d, i) => { d.classList.toggle("filled", i < entered.length); d.classList.remove("error"); }); }
+
+function pressKey(k) {
+  if (busy || unlocked) return;
+  // Reset audio to start instantly for fast typing
+  sfxClick.currentTime = 0; 
+  sfxClick.play().catch(()=>{});
+
+  if (k === "clear") { entered = ""; renderDots(); return; }
+  if (k === "back") { entered = entered.slice(0, -1); renderDots(); return; }
+  if (entered.length >= 4) return;
+  entered += k;
+  renderDots();
+  if (entered.length === 4) {
+    busy = true;
+    setTimeout(handleComplete, 150);
+  }
+}
+
+async function handleComplete() {
+  const code = entered;
+
+  try {
+
+    const response = await fetch("/api/login", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify({
+        passcode: code
+      })
+    });
+
+    if (response.ok) {
+      unlock();
+      return;
+    }
+
+    if (response.status === 401) {
+      fail("Wrong passcode. Try again.");
+      return;
+    }
+
+    throw new Error(`Login failed with status ${response.status}`);
+
+  } catch (error) {
+
+    console.error("Online login unavailable:", error);
+
+    fail("Vault server is not connected yet.");
+
+  }
+}
+
+function fail(msg) {
+  sfxError.currentTime = 0;
+  sfxError.play().catch(() => {});
+  setHint(msg, "warn");
+  emoji.textContent = "😕";
+  card.classList.remove("shake");
+  void card.offsetWidth;
+  card.classList.add("shake");
+  dots.forEach(d => { d.classList.remove("filled"); d.classList.add("error"); });
+  setTimeout(() => {
+    card.classList.remove("shake");
+    entered = "";
+    renderDots();
+    busy = false;
+  }, 520);
+}
+
+/* Adjust these three values to control the transition. Total: 2,900 ms. */
+const GLASS_TIMING = Object.freeze({
+  crack: 1200,  // Cracks spread + brief pause
+  fall: 800,    // Natural falling speed
+  settle: 100   // Short buffer before redirect
+});
+
+function triggerGlassBreak() {
+  const rect = card.getBoundingClientRect();
+  if (!rect.width || !rect.height) return 160;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    card.style.visibility = "hidden";
+    return 160;
+  }
+
+  const {width: w, height: h} = rect;
+  const layer = document.createElement("div");
+  layer.className = "shatter-layer";
+  layer.setAttribute("aria-hidden", "true");
+  document.body.appendChild(layer);
+
+  // Irregular perimeter subdivisions and an off-centre inner fracture ring.
+  // Every tile shares vertices with its neighbours: there are no gaps initially.
+  const rim = [
+    [0,0],[.17,0],[.42,0],[.68,0],[.86,0],[1,0],
+    [1,.26],[1,.57],[1,.86],[1,1],[.74,1],[.49,1],
+    [.24,1],[0,1],[0,.72],[0,.40]
+  ].map(([x,y]) => ({x:x*w,y:y*h}));
+  const impact = {x:.57*w,y:.47*h};
+  const inner = rim.map((p,i) => {
+    const fraction = .31 + .15*(.5+.5*Math.sin(i*2.87+1.2));
+    return {x:impact.x+(p.x-impact.x)*fraction,
+            y:impact.y+(p.y-impact.y)*fraction};
+  });
+  const polygons = [];
+  for (let i=0;i<rim.length;i++) {
+    const j=(i+1)%rim.length;
+    polygons.push([impact,inner[i],inner[j]]);
+    polygons.push([inner[i],rim[i],rim[j],inner[j]]);
+  }
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const makeSvg = name => document.createElementNS(svgNS,name);
+  const overlay = document.createElement("div");
+  overlay.className = "fracture-map";
+  Object.assign(overlay.style, {
+    left:rect.left+"px",top:rect.top+"px",width:w+"px",height:h+"px"
+  });
+  const fractureSvg = makeSvg("svg");
+  fractureSvg.setAttribute("viewBox",`0 0 ${w} ${h}`);
+  fractureSvg.setAttribute("aria-hidden","true");
+  overlay.appendChild(fractureSvg);
+  layer.appendChild(overlay);
+
+  function drawCrack(a,b,delay,duration=290,brightness=.74) {
+    const length = Math.hypot(b.x-a.x,b.y-a.y);
+    const d = `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
+    // Dark hairline next to a silver-white highlight gives the crack depth.
+    for (const [color,thickness,shift] of [
+      ["rgba(4,9,24,.85)",2.3,1],
+      [`rgba(232,248,255,${brightness})`,.9,0]
+    ]) {
+      const path = makeSvg("path");
+      path.setAttribute("d",d);
+      path.setAttribute("fill","none");
+      path.setAttribute("stroke",color);
+      path.setAttribute("stroke-width",thickness);
+      path.setAttribute("stroke-linecap","round");
+      path.style.transform = `translate(${shift}px,${shift}px)`;
+      path.style.strokeDasharray = `${length+2}`;
+      path.style.strokeDashoffset = `${length+2}`;
+      fractureSvg.appendChild(path);
+      path.animate([
+        {strokeDashoffset:length+2}, {strokeDashoffset:0}
+      ], {duration,delay,easing:"ease-out",fill:"forwards"});
+    }
+  }
+
+  const glow = document.createElement("div");
+  glow.className="impact-glow";
+  glow.style.left=(rect.left+impact.x)+"px";
+  glow.style.top=(rect.top+impact.y)+"px";
+  layer.appendChild(glow);
+  glow.animate([
+    {opacity:0,transform:"translate(-50%,-50%) scale(.1)"},
+    {opacity:.8,transform:"translate(-50%,-50%) scale(1)",offset:.28},
+    {opacity:0,transform:"translate(-50%,-50%) scale(2.2)"}
+  ],{duration:540,easing:"ease-out",fill:"forwards"});
+
+  // The break grows outward in three visible phases instead of one instant flash.
+  for(let i=0;i<rim.length;i++) {
+    const j=(i+1)%rim.length;
+    drawCrack(impact,inner[i],55+(i%5)*48,340,.91);
+    drawCrack(inner[i],inner[j],265+(i%4)*37,230,.57);
+    drawCrack(inner[i],rim[i],355+(i%6)*32,300,.76);
+    // Secondary fissures terminate inside a pane; they do not alter tessellation.
+    if(i%3===0) {
+      const a=inner[i], b=rim[j];
+      const endpoint={x:a.x+(b.x-a.x)*.40,y:a.y+(b.y-a.y)*.40};
+      drawCrack(a,endpoint,410+(i%4)*25,220,.43);
+    }
+  }
+
+  // Hold the broken but stationary glass on screen before the fragments fall.
+  setTimeout(() => {
+    const fragments=document.createDocumentFragment();
+    const pieces=[];
+    polygons.forEach((poly,index) => {
+      const minX=Math.min(...poly.map(p=>p.x));
+      const minY=Math.min(...poly.map(p=>p.y));
+      const maxX=Math.max(...poly.map(p=>p.x));
+      const maxY=Math.max(...poly.map(p=>p.y));
+      const pw=maxX-minX, ph=maxY-minY;
+      if(pw<1 || ph<1) return;
+      const piece=document.createElement("div");
+      piece.className="glass-piece";
+      const local=poly.map(p=>({x:p.x-minX,y:p.y-minY}));
+      Object.assign(piece.style,{
+        left:(rect.left+minX)+"px",top:(rect.top+minY)+"px",
+        width:pw+"px",height:ph+"px",
+        clipPath:"polygon("+local.map(p=>`${p.x}px ${p.y}px`).join(",")+")"
+      });
+
+      // Crop a complete copy of the ORIGINAL card to each fragment's bounding box.
+      // Crucially, each fragment rotates around its OWN centre, not the card centre.
+      const copy=card.cloneNode(true);
+      copy.removeAttribute("id");
+      copy.querySelectorAll("[id]").forEach(el=>el.removeAttribute("id"));
+      copy.querySelectorAll("button").forEach(el=>{el.tabIndex=-1;el.disabled=true;});
+      copy.classList.remove("shake","unlocking");
+      Object.assign(copy.style,{
+        left:-minX+"px",top:-minY+"px",width:w+"px",height:h+"px",minHeight:"0"
+      });
+      piece.appendChild(copy);
+
+      // Thin bright fracture edges, with a darker adjacent contour.
+      const outline=makeSvg("svg");
+      outline.setAttribute("viewBox",`0 0 ${pw} ${ph}`);
+      outline.setAttribute("width",pw);
+      outline.setAttribute("height",ph);
+      const d=local.map((p,k)=>`${k?"L":"M"} ${p.x} ${p.y}`).join(" ")+" Z";
+      for(const [stroke,sw] of [["rgba(6,13,27,.62)",2.1],["rgba(223,246,255,.8)",.85]]) {
+        const edge=makeSvg("path");
+        edge.setAttribute("d",d);
+        edge.setAttribute("fill","none");
+        edge.setAttribute("stroke",stroke);
+        edge.setAttribute("stroke-width",sw);
+        edge.setAttribute("stroke-linejoin","round");
+        outline.appendChild(edge);
+      }
+      piece.appendChild(outline);
+      fragments.appendChild(piece);
+      pieces.push({piece,poly,index,minX,minY,pw,ph});
+    });
+    layer.appendChild(fragments);
+
+    // Lightweight reflective micro-fragments add depth without duplicating UI.
+    const dust = document.createDocumentFragment();
+    for (let i=0;i<18;i++) {
+      const speck=document.createElement("div");
+      speck.className="glass-splinter";
+      const angle=i*2.39996;
+      const span=4+(i%5)*2.2;
+      const radial=12+(i%4)*7;
+      Object.assign(speck.style, {
+        left:(rect.left+impact.x+Math.cos(angle)*radial)+"px",
+        top:(rect.top+impact.y+Math.sin(angle)*radial)+"px",
+        width:span+"px",height:(span*.7)+"px"
+      });
+      dust.appendChild(speck);
+      speck.animate([
+        {opacity:.94,transform:"translate3d(0,0,0) rotate(0deg)"},
+        {opacity:.85,offset:.38,transform:`translate3d(${Math.cos(angle)*95}px,${Math.sin(angle)*60-35}px,30px) rotate(${i*30}deg)`},
+        {opacity:0,transform:`translate3d(${Math.cos(angle)*170}px,${h*.85+Math.sin(angle)*60}px,-60px) rotate(${i*63}deg)`}
+      ],{duration:GLASS_TIMING.fall,easing:"linear",fill:"forwards"});
+    }
+    layer.appendChild(dust);
+    card.style.transition="none"; // Disable the original transition: hide it in the SAME frame.
+    card.style.visibility="hidden";
+    overlay.remove();
+    glow.remove();
+
+    // Gravity overtakes a restrained initial outward impulse. Keep shards opaque
+    // through most of their flight: the card breaks instead of simply fading out.
+    requestAnimationFrame(() => {
+      pieces.forEach(({piece,minX,minY,pw,ph,index}) => {
+        const x=minX+pw/2-impact.x, y=minY+ph/2-impact.y;
+        const length=Math.hypot(x,y)||1;
+        const variation=Math.sin(index*23.7)*.5+.5;
+        const vx=(x/length)*(55+variation*105)+Math.sin(index*4.1)*19;
+        const drift=90+variation*105;
+        const gravity=h*.75+300+variation*140;
+        const vy=gravity+Math.max(0,y)*.34;
+        const rz=(index%2 ? 1:-1)*(18+variation*53);
+        const rx=(index%3 ? 1:-1)*(17+variation*48);
+        const ry=(index%4 ? -1:1)*(10+variation*42);
+        piece.animate([
+          {offset:0,opacity:1,transform:"translate3d(0,0,0) rotateX(0deg) rotateY(0deg) rotateZ(0deg)"},
+          {offset:.18,opacity:1,transform:`translate3d(${vx*.23}px,${-17-drift*.17}px,24px) rotateX(${rx*.14}deg) rotateY(${ry*.17}deg) rotateZ(${rz*.12}deg)`},
+          {offset:.52,opacity:1,transform:`translate3d(${vx*.76}px,${vy*.28-drift*.22}px,18px) rotateX(${rx*.45}deg) rotateY(${ry*.47}deg) rotateZ(${rz*.44}deg)`},
+          {offset:.87,opacity:1,transform:`translate3d(${vx*1.4}px,${vy*.83}px,-50px) rotateX(${rx*.87}deg) rotateY(${ry*.9}deg) rotateZ(${rz*.8}deg)`},
+          {offset:1,opacity:.12,transform:`translate3d(${vx*1.6}px,${vy*1.12}px,-100px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg)`}
+        ],{duration:GLASS_TIMING.fall,fill:"forwards",easing:"linear"});
+      });
+    });
+  },GLASS_TIMING.crack);
+
+  const total=GLASS_TIMING.crack+GLASS_TIMING.fall+GLASS_TIMING.settle;
+  setTimeout(()=>layer.remove(),total);
+  return total;
+}
+
+function unlock() {
+  if (unlocked) return;
+  unlocked=true;
+  busy=true;
+  // Play glass-breaking SFX when the shards start falling
+setTimeout(() => {
+  sfxSuccess.currentTime = 0;
+  sfxSuccess.play().catch(() => {});
+}, GLASS_TIMING.crack - 430);
+  setHint("Vault unlocked", "ok");
+  emoji.textContent="🔓";
+  let duration=160;
+  try { duration=triggerGlassBreak(); }
+  catch(error) {
+    console.error("Glass animation unavailable; continuing unlock:",error);
+    card.style.visibility="hidden";
+  }
+  // Navigation is independent of animations and cannot get stuck on a missing frame.
+  setTimeout(()=>{ window.location.href="gallery.html"; },duration);
+}
+
+document.getElementById("keypad").addEventListener("click", e => { const btn = e.target.closest(".key"); if (btn) pressKey(btn.dataset.key); });
+document.addEventListener("keydown", e => {
+  if (/^[0-9]$/.test(e.key)) pressKey(e.key);
+  else if (e.key === "Backspace") pressKey("back");
+  else if (e.key === "Escape") pressKey("clear");
+});
+</script>
+</body>
+</html>
