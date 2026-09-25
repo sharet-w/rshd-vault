@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSHD Journal — Memory</title>
+
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: rgba(255,255,255,0.05);
+    --glass: rgba(255,255,255,0.06);
+    --glass-hover: rgba(255,255,255,0.11);
+    --text-primary: #f5f5f7;
+    --text-secondary: rgba(245,245,247,0.55);
+    --text-faint: rgba(245,245,247,0.35);
+    --accent: #0a84ff;
+    --accent-glow: rgba(10,132,255,0.35);
+    --star: #ffd60a;
+    --danger: #ff453a;
+    --blur: saturate(160%) blur(24px);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont,
+      "SF Pro Display", "SF Pro Text",
+      "Helvetica Neue", Arial, sans-serif;
+
+    height: 100vh;
+    overflow: hidden;
+
+    background: var(--bg);
+    color: var(--text-primary);
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(130px);
+    opacity: 0.24;
+    pointer-events: none;
+    animation: drift 22s ease-in-out infinite;
+  }
+
+  .blob.b1 {
+    width: 560px;
+    height: 560px;
+    background: #3a2d8f;
+    top: -18%;
+    left: -10%;
+  }
+
+  .blob.b2 {
+    width: 480px;
+    height: 480px;
+    background: #0a3d62;
+    bottom: -20%;
+    right: -10%;
+    animation-delay: -8s;
+  }
+
+  @keyframes drift {
+    0%, 100% {
+      transform: translate(0,0) scale(1);
+    }
+    50% {
+      transform: translate(50px,-40px) scale(1.1);
+    }
+  }
+
+  /* ============ TOOLBAR ============ */
+
+  .toolbar {
+    position: relative;
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 26px;
+
+    background: rgba(10,10,15,0.75);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+
+  .toolbar .group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 8px 15px;
+    border-radius: 11px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    color: var(--text-primary);
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.1);
+
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .btn:hover {
+    background: var(--glass-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: wait;
+    transform: none;
+  }
+
+  .btn.danger:hover {
+    background: rgba(255,69,58,0.16);
+    border-color: rgba(255,69,58,0.4);
+    color: #ff6b62;
+  }
+
+  .btn svg {
+    stroke: currentColor;
+    flex-shrink: 0;
+  }
+
+  .nav-counter {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-faint);
+
+    font-variant-numeric: tabular-nums;
+    min-width: 58px;
+    text-align: center;
+  }
+
+  /* ============ VIEWER ============ */
+
+  .viewer {
+    position: relative;
+    z-index: 10;
+
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    min-height: 0;
+  }
+
+  .stage {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 34px;
+
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .stage .media {
+    max-width: 100%;
+    max-height: 100%;
+
+    width: auto;
+    height: auto;
+
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.12);
+
+    box-shadow: 0 32px 90px rgba(0,0,0,0.65);
+
+    object-fit: contain;
+
+    animation: mediaIn 0.55s
+      cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  @keyframes mediaIn {
+    from {
+      opacity: 0;
+      transform: scale(0.965);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .stage .gradient-fill {
+    width: 100%;
+    height: 100%;
+    max-height: 72vh;
+
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.12);
+
+    box-shadow: 0 32px 90px rgba(0,0,0,0.65);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 120px;
+
+    animation: mediaIn 0.55s
+      cubic-bezier(0.22,1,0.36,1) both;
+  }
+
+  /* ============ NAVIGATION ARROWS ============ */
+
+  .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 15;
+
+    width: 52px;
+    height: 52px;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.14);
+
+    backdrop-filter: var(--blur);
+
+    color: var(--text-primary);
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: all 0.18s ease;
+    opacity: 0;
+  }
+
+  .stage:hover .arrow {
+    opacity: 1;
+  }
+
+  .arrow:hover {
+    background: rgba(255,255,255,0.16);
+    transform: translateY(-50%) scale(1.08);
+  }
+
+  .arrow.prev { left: 22px; }
+  .arrow.next { right: 22px; }
+  .arrow.hidden { display: none; }
+
+  /* ============ DETAILS PANEL ============ */
+
+  .panel {
+    position: relative;
+    z-index: 12;
+
+    border-left: 1px solid rgba(255,255,255,0.08);
+
+    background: rgba(14,14,20,0.72);
+
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+
+    overflow-y: auto;
+    padding: 30px 28px 40px;
+  }
+
+  .panel::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .panel::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+  }
+
+  .p-emoji {
+    font-size: 40px;
+    margin-bottom: 14px;
+  }
+
+  .p-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+
+    background: linear-gradient(
+      180deg,
+      #ffffff 35%,
+      rgba(255,255,255,0.6)
+    );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .p-date {
+    font-size: 13.5px;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin: 26px 0 10px;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 11px 14px;
+    border-radius: 12px;
+
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.07);
+
+    margin-bottom: 8px;
+    font-size: 13.5px;
+  }
+
+  .meta-row .k {
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+  }
+
+  .meta-row .v {
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .meta-row .stars {
+    color: var(--star);
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 12px rgba(255,214,10,0.35);
+  }
+
+  .tag-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .p-tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 13px;
+
+    border-radius: 999px;
+
+    background: rgba(10,132,255,0.14);
+    border: 1px solid rgba(10,132,255,0.3);
+
+    color: #7ab8ff;
+  }
+
+  /* ============ JOURNAL COMMENT ============ */
+
+  .comment-box {
+    position: relative;
+
+    border-radius: 16px;
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.09);
+
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .comment-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(10,132,255,0.14);
+  }
+
+  .comment-box textarea {
+    width: 100%;
+    min-height: 110px;
+    resize: vertical;
+
+    background: none;
+    border: none;
+    outline: none;
+
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--text-primary);
+  }
+
+  .comment-box textarea::placeholder {
+    color: var(--text-faint);
+  }
+
+  .comment-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .save-btn {
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: none;
+
+    cursor: pointer;
+
+    background: var(--accent);
+    color: #fff;
+
+    box-shadow: 0 3px 14px var(--accent-glow);
+
+    transition: all 0.15s ease;
+
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  .save-btn.ready {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .save-btn.ready:hover {
+    background: #2492ff;
+    transform: translateY(-1px);
+  }
+
+  .saved-flash {
+    font-size: 12px;
+    font-weight: 600;
+    color: #30d158;
+
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .saved-flash.show {
+    opacity: 1;
+  }
+
+  .kbd-hint {
+    margin-top: 30px;
+    font-size: 11.5px;
+    color: rgba(245,245,247,0.22);
+    line-height: 2;
+  }
+
+  .kbd-hint kbd {
+    font-family: inherit;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-bottom-width: 2px;
+
+    padding: 2px 7px;
+    border-radius: 6px;
+
+    font-size: 10.5px;
+  }
+
+  .notfound {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 14px;
+    color: var(--text-faint);
+  }
+
+  .notfound .big {
+    font-size: 60px;
+  }
+
+  /* ============ BLUR COVER ============ */
+
+  .stage .media,
+  .stage .gradient-fill {
+    transition: filter 0.5s ease, transform 0.5s ease;
+  }
+
+  .stage.is-covered .media,
+  .stage.is-covered .gradient-fill {
+    filter: blur(30px);
+    transform: scale(1.015);
+  }
+
+  /* Transparent click target, with no visible reveal capsule. */
+  .reveal-cover {
+    position: absolute;
+    z-index: 11;
+
+    display: block;
+    padding: 0;
+    border: 0;
+
+    cursor: pointer;
+    border-radius: 22px;
+    background: transparent;
+  }
+
+  .reveal-cover:focus-visible {
+    outline: 2px solid #90baff;
+    outline-offset: -3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stage .media,
+    .stage .gradient-fill {
+      transition: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+
+<!-- ============ TOOLBAR ============ -->
+
+<header class="toolbar" id="toolbar" style="display:none;">
+
+  <div class="group">
+
+    <button class="btn" id="backBtn" type="button">
+      <svg width="15" height="15"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke-width="2.2"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      Gallery
+    </button>
+
+  </div>
+
+  <div class="group">
+
+    <!-- DELETE -->
+
+    <button class="btn danger" id="delBtn" type="button">
+      <svg width="14" height="14"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke-width="2"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6"/>
+      </svg>
+      Delete
+    </button>
+
+    <!-- DOWNLOAD: SAME SVG AS GALLERY/TIMELINE MENU -->
+
+    <button class="btn"
+            id="downloadBtn"
+            type="button"
+            title="Download original media">
+
+      <svg width="15" height="15"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M12 3v12"/>
+        <path d="m7 10 5 5 5-5"/>
+        <path d="M4 17v4h16v-4"/>
+      </svg>
+
+      Download
+    </button>
+
+    <span class="nav-counter" id="navCounter"></span>
+
+    <!-- EDIT -->
+
+    <button class="btn" id="editBtn" type="button" title="Edit details">
+      <svg width="14" height="14"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke-width="2"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M12 20h9"/>
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
+      </svg>
+      Edit
+    </button>
+
+  </div>
+</header>
+
+<!-- ============ MEDIA VIEWER ============ -->
+
+<main class="viewer" id="viewer" style="display:none;">
+
+  <section class="stage" id="stage">
+
+    <button class="arrow prev"
+            id="prevBtn"
+            type="button"
+            aria-label="Previous memory">
+      <svg width="20" height="20"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2.4"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
+
+    <button class="arrow next"
+            id="nextBtn"
+            type="button"
+            aria-label="Next memory">
+      <svg width="20" height="20"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2.4"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M9 6l6 6-6 6"/>
+      </svg>
+    </button>
+
+  </section>
+
+  <aside class="panel">
+
+    <div class="p-emoji" id="pEmoji">🖼️</div>
+
+    <h1 class="p-title" id="pTitle"></h1>
+
+    <div class="p-date" id="pDate"></div>
+
+    <div class="section-label">Details</div>
+
+    <div id="metaList"></div>
+
+    <div class="section-label"
+         id="tagLabel"
+         style="display:none;">
+      Tags
+    </div>
+
+    <div class="tag-row" id="tagRow"></div>
+
+    <div class="section-label">📝 Journal comment</div>
+
+    <div class="comment-box">
+
+      <textarea id="commentText"
+                maxlength="2000"
+                placeholder="Write what this memory means to you…"></textarea>
+
+      <div class="comment-foot">
+
+        <span class="char-count" id="charCount">
+          0 / 2000
+        </span>
+
+        <span style="display:flex;align-items:center;gap:12px;">
+
+          <span class="saved-flash" id="savedFlash">
+            ✓ Saved
+          </span>
+
+          <button class="save-btn" id="saveBtn" type="button">
+            Save
+          </button>
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <div class="kbd-hint">
+      <kbd>←</kbd> <kbd>→</kbd> browse memories
+      &nbsp;·&nbsp;
+      <kbd>Esc</kbd> back to gallery
+    </div>
+
+  </aside>
+
+</main>
+
+<div class="notfound" id="notFound" style="display:none;">
+  <div class="big">🫥</div>
+  <h2 style="color:var(--text-secondary);font-size:18px;">
+    Memory not found
+  </h2>
+  <button class="btn"
+          type="button"
+          onclick="window.location.href='gallery.html'">
+    Back to gallery
+  </button>
+</div>
+
+<!-- Only storage.js is required on this page. -->
+<script src="storage.js"></script>
+
+<script>
+if (!sessionStorage.getItem("rshdKey")) {
+  window.location.replace("lockscreen.html");
+}
+
+let spoilerMediaObserver = null;
+
+let allIds = [];
+let currentIndex = -1;
+let entry = null;
+
+const stage = document.getElementById("stage");
+const viewer = document.getElementById("viewer");
+const toolbar = document.getElementById("toolbar");
+
+const params = new URLSearchParams(window.location.search);
+const entryId = Number(params.get("id"));
+
+/* ============ INITIAL LOAD ============ */
+
+window.onload = async () => {
+  try {
+    await JournalStore.ensureAccess();
+
+    const data = JournalStore.getData();
+
+    const entries = data.entries.sort((a, b) =>
+      b.dateShot.localeCompare(a.dateShot)
+    );
+
+    allIds = entries.map(item => item.id);
+
+    entry = entries.find(item => item.id === entryId);
+
+    if (!entry) {
+      document.getElementById("notFound").style.display = "flex";
+      return;
+    }
+
+    currentIndex = allIds.indexOf(entry.id);
+
+    toolbar.style.display = "flex";
+    viewer.style.display = "grid";
+
+    await render();
+    updateArrows();
+
+  } catch (error) {
+    console.error("Could not load memory:", error);
+    document.getElementById("notFound").style.display = "flex";
+  }
+};
+
+/* ============ SAFE TEXT ============ */
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[character]));
+}
+
+/* ============ RENDER MEDIA ============ */
+
+async function render() {
+  if (spoilerMediaObserver) {
+    spoilerMediaObserver.disconnect();
+    spoilerMediaObserver = null;
+  }
+
+  stage.querySelectorAll(
+    ".media, .gradient-fill, .reveal-cover"
+  ).forEach(node => node.remove());
+
+  stage.classList.remove("is-covered");
+
+  const url = entry.fileName
+    ? await JournalStore.getMediaURL(entry.fileName)
+    : null;
+
+  let mediaEl;
+
+  if (entry.type === "video" && url) {
+
+    mediaEl = document.createElement("video");
+
+    mediaEl.className = "media";
+    mediaEl.src = url;
+    mediaEl.controls = entry.blurCover !== true;
+
+  } else if (url) {
+
+    mediaEl = document.createElement("img");
+
+    mediaEl.className = "media";
+    mediaEl.src = url;
+    mediaEl.alt = entry.title;
+
+  } else {
+
+    mediaEl = document.createElement("div");
+
+    mediaEl.className = "gradient-fill";
+
+    mediaEl.style.background =
+      entry.grad || "linear-gradient(135deg,#667eea,#764ba2)";
+
+    mediaEl.textContent = entry.emoji || "🖼️";
+
+  }
+
+  stage.appendChild(mediaEl);
+
+  /* ============ CLICK TO REVEAL ============ */
+
+  if (entry.blurCover === true) {
+
+    stage.classList.add("is-covered");
+
+    const reveal = document.createElement("button");
+
+    reveal.type = "button";
+    reveal.className = "reveal-cover";
+    reveal.setAttribute("aria-label", "Reveal hidden memory");
+    reveal.title = "Click to reveal memory";
+
+    const fitCover = () => {
+      if (!reveal.isConnected) return;
+
+      const mediaRect = mediaEl.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+
+      reveal.style.left =
+        `${mediaRect.left - stageRect.left}px`;
+
+      reveal.style.top =
+        `${mediaRect.top - stageRect.top}px`;
+
+      reveal.style.width =
+        `${mediaRect.width}px`;
+
+      reveal.style.height =
+        `${mediaRect.height}px`;
+    };
+
+    if (typeof ResizeObserver !== "undefined") {
+      spoilerMediaObserver = new ResizeObserver(fitCover);
+      spoilerMediaObserver.observe(stage);
+      spoilerMediaObserver.observe(mediaEl);
+    } else {
+      window.addEventListener("resize", fitCover, { once: true });
+    }
+
+    if (mediaEl.tagName === "IMG") {
+      mediaEl.addEventListener("load", fitCover, { once: true });
+    }
+
+    if (mediaEl.tagName === "VIDEO") {
+      mediaEl.addEventListener(
+        "loadedmetadata",
+        fitCover,
+        { once: true }
+      );
+    }
+
+    requestAnimationFrame(fitCover);
+
+    reveal.onclick = () => {
+
+      stage.classList.remove("is-covered");
+
+      if (mediaEl.tagName === "VIDEO") {
+        mediaEl.controls = true;
+      }
+
+      if (spoilerMediaObserver) {
+        spoilerMediaObserver.disconnect();
+        spoilerMediaObserver = null;
+      }
+
+      reveal.remove();
+
+    };
+
+    stage.appendChild(reveal);
+    requestAnimationFrame(fitCover);
+  }
+
+  /* ============ RENDER DETAILS ============ */
+
+  document.getElementById("pEmoji").textContent =
+    entry.emoji || (entry.type === "video" ? "🎬" : "🖼️");
+
+  document.getElementById("pTitle").textContent =
+    entry.title;
+
+  document.getElementById("pDate").textContent =
+    new Date(entry.dateShot + "T00:00:00").toLocaleDateString(
+      [],
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }
+    );
+
+  const meta = [
+    ["📍", "Location", entry.location],
+    ["📷", "Shot on", entry.device],
+    ["🎞️", "Type", entry.type === "video" ? "Video" : "Photo"],
+    ["◉", "Blur cover", entry.blurCover === true ? "Enabled" : "Off"]
+  ];
+
+  document.getElementById("metaList").innerHTML =
+    meta.map(([icon, key, value]) => `
+      <div class="meta-row">
+        <span class="k">${icon} ${key}</span>
+        <span class="v">${esc(value)}</span>
+      </div>
+    `).join("") +
+    `<div class="meta-row">
+      <span class="k">⭐ Rating</span>
+      <span class="v stars">${
+        "★".repeat(entry.rating || 0)
+      }${
+        "☆".repeat(5 - (entry.rating || 0))
+      }</span>
+    </div>`;
+
+  const tags = entry.tags || [];
+
+  document.getElementById("tagLabel").style.display =
+    tags.length ? "block" : "none";
+
+  document.getElementById("tagRow").innerHTML =
+    tags.map(tag => `
+      <span class="p-tag">#${esc(tag)}</span>
+    `).join("");
+
+  const comment = document.getElementById("commentText");
+
+  comment.value = entry.comment || "";
+
+  document.getElementById("charCount").textContent =
+    `${comment.value.length} / 2000`;
+
+  document.getElementById("saveBtn").classList.remove("ready");
+
+  document.getElementById("navCounter").textContent =
+    `${currentIndex + 1} / ${allIds.length}`;
+}
+
+/* ============ COMMENT SAVING ============ */
+
+const commentText = document.getElementById("commentText");
+const saveBtn = document.getElementById("saveBtn");
+
+commentText.addEventListener("input", () => {
+
+  document.getElementById("charCount").textContent =
+    `${commentText.value.length} / 2000`;
+
+  saveBtn.classList.add("ready");
+
+});
+
+saveBtn.addEventListener("click", async () => {
+
+  if (!entry) return;
+
+  const previousComment = entry.comment;
+  entry.comment = commentText.value.trim();
+
+  try {
+
+    await JournalStore.save();
+
+    saveBtn.classList.remove("ready");
+
+    const flash = document.getElementById("savedFlash");
+
+    flash.classList.add("show");
+
+    setTimeout(() => {
+      flash.classList.remove("show");
+    }, 1600);
+
+  } catch (error) {
+
+    entry.comment = previousComment;
+
+    console.error("Comment save failed:", error);
+
+    alert("Unable to save the journal comment.");
+
+  }
+
+});
+
+commentText.addEventListener("keydown", event => {
+
+  if ((event.metaKey || event.ctrlKey) &&
+      event.key === "Enter") {
+
+    event.preventDefault();
+    saveBtn.click();
+
+  }
+
+});
+
+/* ============ NAVIGATION ============ */
+
+function go(delta) {
+
+  const nextIndex = currentIndex + delta;
+
+  if (nextIndex < 0 || nextIndex >= allIds.length) {
+    return;
+  }
+
+  window.location.href =
+    `photo.html?id=${allIds[nextIndex]}`;
+
+}
+
+function updateArrows() {
+
+  document.getElementById("prevBtn").classList.toggle(
+    "hidden",
+    currentIndex <= 0
+  );
+
+  document.getElementById("nextBtn").classList.toggle(
+    "hidden",
+    currentIndex >= allIds.length - 1
+  );
+
+}
+
+document.getElementById("prevBtn").onclick = () => go(-1);
+document.getElementById("nextBtn").onclick = () => go(1);
+
+document.getElementById("backBtn").onclick = () => {
+  window.location.href = "gallery.html";
+};
+
+document.getElementById("editBtn").onclick = () => {
+
+  if (!entry) return;
+
+  window.location.href = `upload.html?id=${entry.id}`;
+
+};
+
+/* ============ INDEPENDENT DOWNLOAD ============ */
+
+document.getElementById("downloadBtn").onclick = async () => {
+
+  const button = document.getElementById("downloadBtn");
+
+  if (!entry?.fileName) {
+    alert("No original image or video is attached.");
+    return;
+  }
+
+  button.disabled = true;
+
+  try {
+
+    // Get the original media URL from vault storage.
+    const sourceURL =
+      await JournalStore.getMediaURL(entry.fileName);
+
+    if (!sourceURL) {
+      throw new Error("Original media file not found.");
+    }
+
+    // Convert the original media into a downloadable Blob.
+    const response = await fetch(sourceURL);
+
+    if (!response.ok) {
+      throw new Error(
+        `Could not read media: HTTP ${response.status}`
+      );
+    }
+
+    const originalBlob = await response.blob();
+
+    if (!originalBlob.size) {
+      throw new Error("The media file is empty.");
+    }
+
+    const downloadURL = URL.createObjectURL(originalBlob);
+
+    const filename =
+      String(entry.fileName).split(/[\\/]/).pop() ||
+      `memory-${entry.id}`;
+
+    const link = document.createElement("a");
+
+    link.href = downloadURL;
+    link.download = filename;
+
+    document.body.appendChild(link);
+
+    // Trigger native browser download.
+    link.click();
+
+    link.remove();
+
+    // Give the browser time to start the download.
+    setTimeout(() => {
+      URL.revokeObjectURL(downloadURL);
+    }, 60000);
+
+  } catch (error) {
+
+    console.error("Original media download failed:", error);
+
+    alert(
+      "Download failed. Open the browser console to see the error."
+    );
+
+  } finally {
+
+    button.disabled = false;
+
+  }
+
+};
+
+/* ============ DELETE MEMORY ============ */
+
+document.getElementById("delBtn").onclick = async () => {
+
+  if (!entry) return;
+
+  const confirmed = confirm(
+    `Delete "${entry.title}"?\n` +
+    "This will permanently delete the file from your USB."
+  );
+
+  if (!confirmed) return;
+
+  const button = document.getElementById("delBtn");
+  button.disabled = true;
+
+  try {
+
+    await JournalStore.deleteMedia(entry.fileName);
+
+    const data = JournalStore.getData();
+
+    data.entries = data.entries.filter(
+      item => item.id !== entry.id
+    );
+
+    await JournalStore.save();
+
+    window.location.href = "gallery.html";
+
+  } catch (error) {
+
+    console.error("Delete failed:", error);
+
+    alert(
+      "Unable to complete deletion. Check the browser console."
+    );
+
+    button.disabled = false;
+
+  }
+
+};
+
+/* ============ KEYBOARD SHORTCUTS ============ */
+
+document.addEventListener("keydown", event => {
+
+  if (event.target.tagName === "TEXTAREA") {
+    return;
+  }
+
+  if (event.key === "ArrowLeft") {
+    go(-1);
+  }
+
+  if (event.key === "ArrowRight") {
+    go(1);
+  }
+
+  if (event.key === "Escape") {
+    window.location.href = "gallery.html";
+  }
+
+});
+
+</script>
+</body>
+</html>
