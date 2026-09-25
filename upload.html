@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rashd's vault</title>
+<style>
+  :root {
+    --bg: #080F12 ; --card-bg: rgba(13, 30, 33, 0.48); --card-border: rgba(115, 224, 209, 0.12);
+    --glass: rgba(126, 255, 227, 0.045); --glass-hover: rgba(126, 255, 227, 0.09);
+    --text-primary: #f5f5f7; --text-secondary: rgba(245, 245, 247, 0.55); --text-faint: rgba(245, 245, 247, 0.35);
+    --accent: #087F8C; --accent-glow: rgba(8, 127, 140, 0.35); --star: #ffd60a; --success: #30d158; --blur: saturate(160%) blur(24px);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif; min-height: 100vh; background:
+  radial-gradient(
+    ellipse at 15% 10%,
+    rgba(9, 94, 92, 0.23),
+    transparent 45%
+  ),
+  radial-gradient(
+    ellipse at 90% 85%,
+    rgba(8, 85, 68, 0.22),
+    transparent 50%
+  ),
+  linear-gradient(
+    145deg,
+    #080F12 0%,
+    #0B171A 48%,
+    #071113 100%
+  ); color: var(--text-primary); }
+  .blob { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.26; pointer-events: none; animation: drift 22s ease-in-out infinite; }
+  /* ===== OBSIDIAN EMERALD ATMOSPHERE ===== */
+
+.blob.b1 {
+  width: 650px;
+  height: 650px;
+  background: #087F8C;
+  top: -25%;
+  left: -15%;
+  opacity: 0.27;
+}
+
+.blob.b2 {
+  width: 580px;
+  height: 580px;
+  background: #075E4B;
+  bottom: -25%;
+  right: -12%;
+  opacity: 0.32;
+  animation-delay: -8s;
+}
+  @keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-40px) scale(1.1); } }
+
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px 36px; background: rgba(10,10,15,0.75); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .topbar h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; background: linear-gradient(180deg, #ffffff 35%, rgba(255,255,255,0.55)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-primary); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.18s ease; }
+  .btn:hover { background: var(--glass-hover); transform: translateY(-1px); }
+  .btn.primary { background: var(--accent); border-color: transparent; box-shadow: 0 4px 18px var(--accent-glow); }
+
+  .layout { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 34px 36px 70px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 22px; backdrop-filter: var(--blur); box-shadow: 0 24px 60px rgba(0,0,0,0.45); padding: 26px; animation: cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .card h2 { font-size: 15px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 9px; }
+  .card h2 .step-n { width: 24px; height: 24px; border-radius: 8px; font-size: 12px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; }
+
+  .dropzone { border: 1.6px dashed rgba(255,255,255,0.22); border-radius: 16px; min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; color: var(--text-secondary); cursor: pointer; transition: all 0.22s ease; overflow: hidden; position: relative; padding: 20px; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: rgba(10,132,255,0.06); }
+  .dropzone .dz-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+}
+
+.dropzone .dz-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+  .dropzone .dz-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .dropzone .dz-sub { font-size: 12.5px; color: var(--text-faint); }
+  .dropzone input { display: none; }
+  .preview { width: 100%; height: 100%; position: absolute; inset: 0; display: none; }
+  .preview img, .preview video { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+  .preview .repick { position: absolute; bottom: 12px; right: 12px; font-size: 11.5px; font-weight: 700; background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 6px 13px; border-radius: 999px; backdrop-filter: blur(8px); cursor: pointer; }
+  .file-name { margin-top: 12px; font-size: 12.5px; color: var(--text-faint); display: flex; align-items: center; gap: 8px; word-break: break-all; }
+  .file-name .ftype { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; background: rgba(10,132,255,0.16); color: #7ab8ff; border: 1px solid rgba(10,132,255,0.3); }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: var(--text-faint); margin-bottom: 7px; }
+  .field input[type="text"], .field input[type="date"], .field textarea { width: 100%; font-family: inherit; font-size: 14px; color: var(--text-primary); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 11px 14px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(10,132,255,0.16); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  input[type="date"] { color-scheme: dark; }
+
+  .star-input { display: flex; gap: 6px; align-items: center; }
+  .star-input button { background: none; border: none; font-size: 26px; cursor: pointer; color: rgba(245,245,247,0.22); padding: 0 2px; }
+  .star-input button.on { color: var(--star); text-shadow: 0 0 14px rgba(255,214,10,0.45); }
+  .star-input .lbl { font-size: 12px; color: var(--text-faint); margin-left: 8px; font-weight: 600; }
+  .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .emoji-grid button { font-size: 21px; padding: 7px 0; border-radius: 10px; background: var(--glass); border: 1px solid rgba(255,255,255,0.08); cursor: pointer; transition: all 0.13s ease; }
+  .emoji-grid button.on { border-color: var(--accent); background: rgba(10,132,255,0.16); }
+
+  .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 12px; animation: cardIn 0.6s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+  .saved-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); z-index: 100; opacity: 0; background: rgba(20,20,28,0.9); border: 1px solid rgba(48,209,88,0.4); color: var(--success); font-size: 13.5px; font-weight: 600; padding: 12px 22px; border-radius: 999px; backdrop-filter: var(--blur); transition: all 0.4s cubic-bezier(0.22,1,0.36,1); }
+  .saved-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* ============ MODERN NAVBAR ============ */
+
+.nav-back {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+  flex-shrink: 0;
+}
+
+.nav-back:hover {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.12);
+}
+
+/* Creative button */
+
+.inspire-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+
+  background: linear-gradient(
+    135deg,
+    rgba(124,92,255,0.20),
+    rgba(124,92,255,0.07)
+  );
+
+  border: 1px solid rgba(175,145,255,0.32);
+
+  color: #e9d5ff;
+
+  padding: 11px 15px;
+  border-radius: 13px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
+}
+
+.inspire-btn:hover {
+  transform: translateY(-2px);
+
+  background: rgba(124,92,255,0.22);
+
+  box-shadow:
+    0 0 25px rgba(124,92,255,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.inspire-btn svg {
+  flex-shrink: 0;
+}
+
+.inspire-btn.active svg {
+  animation: sparkSpin 0.6s ease;
+}
+
+@keyframes sparkSpin {
+  0% {
+    transform: scale(0.7) rotate(-35deg);
+    opacity: 0.4;
+  }
+
+  60% {
+    transform: scale(1.3) rotate(15deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
+/* Animated writing prompt */
+
+.prompt-pop {
+  animation: promptAppear 0.45s
+    cubic-bezier(0.22,1,0.36,1);
+}
+
+@keyframes promptAppear {
+  0% {
+    transform: translateY(5px);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inspire-btn,
+  .inspire-btn.active svg,
+  .prompt-pop {
+    animation: none;
+    transition: none;
+  }
+}
+
+  /* Strong blur preview only: no overlay, dust or dark veil. */
+  .preview img, .preview video { transition:filter .45s ease,transform .45s ease; }
+  .preview.blur-preview img, .preview.blur-preview video {
+    filter:blur(30px); transform:scale(1.12);
+  }
+  .preview .repick { z-index:2; }
+  @media(prefers-reduced-motion:reduce) { .preview img, .preview video { transition:none; } }
+  /* Soft teal blur-cover switch */
+  .blur-setting { display:flex !important; align-items:center; justify-content:space-between; gap:12px;
+    min-height:49px; padding:8px 12px; border-radius:13px; cursor:pointer; text-transform:none !important;
+    letter-spacing:normal !important; border:1px solid rgba(113,225,211,.16);
+    background:rgba(126,255,227,.045); margin-bottom:0 !important; }
+  .blur-setting-copy { display:flex; flex-direction:column; gap:3px; }
+  .blur-setting-copy strong { font-size:12px; color:#e6fff9; font-weight:650; }
+  .blur-setting-copy small { font-size:10px; color:rgba(225,255,249,.55); font-weight:400; }
+  .blur-setting input { position:absolute; width:1px; height:1px; opacity:0; }
+  .blur-track { position:relative; flex:none; width:51px; height:29px; border-radius:30px;
+    background:#25333a; border:1px solid rgba(255,255,255,.18); transition:.25s ease; }
+  .blur-knob { position:absolute; top:3px; left:3px; width:21px; height:21px; border-radius:50%;
+    background:#b5c8cb; transition:transform .25s ease,background .25s ease; }
+  .blur-setting input:checked + .blur-track { background:linear-gradient(135deg,#0d8a85,#166b77);
+    border-color:#67ead4; box-shadow:0 0 19px rgba(52,229,194,.28), inset 0 0 9px rgba(52,229,194,.18); }
+  .blur-setting input:checked + .blur-track .blur-knob { transform:translateX(22px); background:#d0fff5; box-shadow:0 0 10px rgba(156,255,235,.8); }
+  .blur-setting input:focus-visible + .blur-track { outline:2px solid #9cfff0; outline-offset:3px; }
+</style>
+</head>
+<body>
+
+  <div class="blob b1"></div><div class="blob b2"></div>
+
+  <header class="topbar">
+
+  <!-- Back to gallery -->
+  <button class="btn nav-back"
+          type="button"
+          aria-label="Back to gallery"
+          title="Back to gallery"
+          onclick="window.location.href='gallery.html'">
+
+    <svg width="20" height="20"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+
+  </button>
+
+  <h1 id="pageTitle">Add Memory</h1>
+
+  <!-- Creative prompt generator -->
+  <button class="btn inspire-btn"
+          type="button"
+          id="inspireBtn"
+          title="Get a creative writing prompt">
+
+    <svg width="17" height="17"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="1.8"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+      <path d="m12 3 1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9L12 3Z"/>
+      <path d="m19 17 .7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7L19 17Z"/>
+    </svg>
+
+    <span>Inspire Me</span>
+
+  </button>
+
+</header>
+
+  <main class="layout">
+    <section class="card">
+      <h2><span class="step-n">1</span> Photo / Video</h2>
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon" id="dzIcon">
+
+  <svg xmlns="http://www.w3.org/2000/svg"
+     width="50"
+     height="50"
+     viewBox="0 0 16 16"
+     role="img"
+     aria-label="Upload to cloud">
+
+  <defs>
+
+    <!-- Cloud gradient -->
+    <linearGradient id="cloudGradient"
+                    x1="0" y1="0"
+                    x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="55%" stop-color="#D8DCE3"/>
+      <stop offset="100%" stop-color="#9299A5"/>
+    </linearGradient>
+
+  </defs>
+
+  <!-- Cloud with upload arrow -->
+  <path
+    d="M8 2
+       A5.53 5.53 0 0 0 4.406 3.342
+       C3.64 4.002 3.085 4.862 2.942 5.725
+       C1.266 6.095 0 7.555 0 9.318
+       C0 11.366 1.708 13 3.781 13
+       H12.687
+       C14.502 13 16 11.57 16 9.773
+       C16 8.137 14.758 6.804 13.166 6.579
+       C12.923 3.999 10.69 2 8 2
+
+       M10.354 7.146
+       A0.5 0.5 0 0 1 9.646 7.854
+       L8.5 6.707
+       V10.5
+       A0.5 0.5 0 0 1 7.5 10.5
+       V6.707
+       L6.354 7.854
+       A0.5 0.5 0 1 1 5.646 7.146
+       L7.646 5.146
+       A0.5 0.5 0 0 1 8.354 5.146
+       Z"
+    fill="url(#cloudGradient)"/>
+
+</svg>
+
+</div>
+        <div class="dz-title" id="dzTitle">Drop your file here</div>
+        <div class="dz-sub">or click to browse — JPG, PNG, HEIC, MP4, MOV<br>Writes directly to your USB</div>
+        <input type="file" id="fileInput" accept="image/*,video/*">
+        <div class="preview" id="preview">
+          <img id="previewImg" alt="">
+          <video id="previewVideo" controls style="display:none;"></video>
+          <span class="repick">↺ Replace</span>
+        </div>
+      </div>
+      <div class="file-name" id="fileName"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="step-n">2</span> Details</h2>
+      <div class="field"><label>Title</label><input type="text" id="inTitle" placeholder="e.g. Eid Family Pic " maxlength="80"></div>
+      <div class="field-row">
+        <div class="field"><label>Date shot</label><input type="date" id="inDate"></div>
+        <div class="field"><label>Location</label><input type="text" id="inLocation" placeholder="e.g. Alinagar Colony " maxlength="60"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Device / Camera</label><input type="text" id="inDevice" placeholder=",✦,❖,SONY,xiomi,1+" maxlength="60"></div>
+        <div class="field"><label>Censor Satus</label>
+          <label class="blur-setting" for="blurCover" id="blurSetting">
+            <span class="blur-setting-copy"><strong>Blur cover</strong><small>Apply blurriness</small></span>
+            <input type="checkbox" id="blurCover" role="switch" aria-label="Blur memory cover">
+            <span class="blur-track" aria-hidden="true"><span class="blur-knob"></span></span>
+          </label></div>
+      </div>
+      <div class="field"><label>Quality rating</label>
+        <div class="star-input" id="starInput">
+          <button data-v="1">★</button><button data-v="2">★</button><button data-v="3">★</button><button data-v="4">★</button><button data-v="5">★</button>
+          <span class="lbl" id="starLbl">Tap to rate</span>
+        </div>
+      </div>
+      <div class="field"><label>Tags (comma separated)</label><input type="text" id="inTags" placeholder="travel, friends, nature" maxlength="120"></div>
+      <div class="field"><label>Category</label><div class="emoji-grid" id="emojiGrid"></div></div>
+    </section>
+
+    <section class="card" style="grid-column: 1 / -1;">
+      <h2><span class="step-n">3</span> Journal comment</h2>
+      <div class="field" style="margin-bottom:0;"><textarea id="inComment" placeholder="What does this memory mean to you? Write anything…" maxlength="2000"></textarea></div>
+    </section>
+    <div class="actions">
+
+  <!-- CANCEL BUTTON -->
+  <button class="btn"
+          type="button"
+          onclick="window.location.href='gallery.html'">
+
+    <svg width="16" height="16"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+
+    Cancel
+  </button>
+
+  <!-- SAVE MEMORY BUTTON -->
+  <button class="btn primary"
+          type="button"
+          id="saveBtn">
+
+    <svg width="16" height="16"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2.2"
+         stroke-linecap="round"
+         stroke-linejoin="round">
+      <path d="M20 6L9 17l-5-5"/>
+    </svg>
+
+    Save Memory
+  </button>
+
+</div>
+  </main>
+  <div class="saved-toast" id="toast">✓ Memory saved to USB</div>
+
+<script src="storage.js"></script>
+<script>
+  // Save button sound effect
+const sfxSave = new Audio("save.mp3");
+sfxSave.volume = 0.65;
+if (!sessionStorage.getItem("rshdKey")) { window.location.replace("lockscreen.html"); }
+
+const editId = +(new URLSearchParams(window.location.search).get("id")) || null;
+let form = { file: null, fileName: "", type: "photo", grad: "linear-gradient(135deg,#667eea,#764ba2)", emoji: "🖼️", rating: 0, oldFileName: "" };
+const EMOJIS = ["👤","📄","💭","🤡","👀","🚂","☔️","🎯","🌸","🚗","🎥","🌙","⚽️","❤️","🌩️","🐮"];
+
+const emojiGrid = document.getElementById("emojiGrid");
+EMOJIS.forEach(em => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = em;
+  if (em === form.emoji) b.classList.add("on");
+  b.onclick = () => { form.emoji = em; [...emojiGrid.children].forEach(c => c.classList.toggle("on", c === b)); };
+  emojiGrid.appendChild(b);
+});
+
+document.getElementById("starInput").addEventListener("click", e => {
+  const btn = e.target.closest("button"); if (!btn) return;
+  const v = +btn.dataset.v; form.rating = (form.rating === v) ? 0 : v;
+  document.querySelectorAll("#starInput button").forEach(b => b.classList.toggle("on", +b.dataset.v <= form.rating));
+  document.getElementById("starLbl").textContent = form.rating === 0 ? "Tap to rate" : ["","Poor","Okay","Good","Great","Masterpiece ⭐"][form.rating];
+});
+
+const dz = document.getElementById("dropzone"); const fileInput = document.getElementById("fileInput");
+const preview = document.getElementById("preview"); const previewImg = document.getElementById("previewImg"); const previewVideo = document.getElementById("previewVideo");
+const blurCover = document.getElementById("blurCover");
+function updateBlurPreview() {
+  preview.classList.toggle("blur-preview", blurCover.checked);
+}
+blurCover.addEventListener("change", updateBlurPreview);
+updateBlurPreview();
+
+dz.addEventListener("click", () => fileInput.click());
+dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
+dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+dz.addEventListener("drop", e => { e.preventDefault(); dz.classList.remove("dragover"); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener("change", () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+async function handleFile(file) {
+  const isVideo = file.type.startsWith("video");
+  form.file = file; form.fileName = file.name;
+  form.type = isVideo ? "video" : "photo"; form.emoji = isVideo ? "🎬" : form.emoji;
+
+  document.getElementById("dzIcon").style.display = "none"; document.getElementById("dzTitle").style.display = "none"; document.querySelector(".dz-sub").style.display = "none";
+  preview.style.display = "block";
+  
+  const tempUrl = URL.createObjectURL(file);
+  if (isVideo) { previewImg.style.display = "none"; previewVideo.style.display = "block"; previewVideo.src = tempUrl; }
+  else { previewVideo.style.display = "none"; previewImg.style.display = "block"; previewImg.src = tempUrl; }
+  
+  document.getElementById("fileName").innerHTML = `<span class="ftype">${isVideo ? "VIDEO" : "PHOTO"}</span> ${file.name} · ${(file.size/1024/1024).toFixed(1)} MB`;
+  const t = document.getElementById("inTitle"); if (!t.value) t.value = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
+  // Automatically extract photo metadata
+await autoFillPhotoMetadata(file);
+}
+/* ============ OFFLINE PHOTO EXIF ENGINE ============ */
+
+async function autoFillPhotoMetadata(file) {
+
+  // This lightweight parser supports JPEG EXIF.
+  if (!/\.jpe?g$/i.test(file.name) &&
+      !/^image\/jpeg$/i.test(file.type)) return;
+
+  try {
+
+    // EXIF is normally near the start of JPEG files.
+    const buffer = await file.slice(0, 1024 * 1024).arrayBuffer();
+
+    // Ignore results if another image was selected meanwhile.
+    if (form.file !== file) return;
+
+    const exif = readJPEGExif(buffer);
+
+    if (!exif) return;
+
+    // 1. Capture date
+    if (exif.date) {
+
+      const dateField = document.getElementById("inDate");
+
+      if (!dateField.value) {
+        dateField.value = exif.date;
+      }
+
+    }
+
+    // 2. Camera make and model
+    if (exif.camera) {
+
+      const cameraField = document.getElementById("inDevice");
+
+      if (!cameraField.value.trim()) {
+        cameraField.value = exif.camera.slice(0, 60);
+      }
+
+    }
+
+  } catch (error) {
+
+    // Never interrupt the photo-upload process.
+    console.warn("EXIF metadata unavailable:", error);
+
+  }
+
+}
+
+
+/* ============ JPEG / TIFF EXIF PARSER ============ */
+
+function readJPEGExif(buffer) {
+
+  const view = new DataView(buffer);
+  const bytes = new Uint8Array(buffer);
+
+  if (view.byteLength < 4 ||
+      view.getUint16(0) !== 0xFFD8) return null;
+
+  const size = view.byteLength;
+
+  function textAt(offset, length) {
+
+    if (offset < 0 || offset + length > size) return "";
+
+    let result = "";
+
+    for (let i = 0; i < length; i++) {
+
+      const value = bytes[offset + i];
+
+      if (value === 0) break;
+
+      result += String.fromCharCode(value);
+
+    }
+
+    return result.trim();
+
+  }
+
+  let position = 2;
+
+  while (position + 4 <= size) {
+
+    if (bytes[position] !== 0xFF) break;
+
+    while (bytes[position] === 0xFF) position++;
+
+    if (position >= size) break;
+
+    const marker = bytes[position++];
+
+    // Image data / end of image
+    if (marker === 0xDA || marker === 0xD9) break;
+
+    // Markers without segment lengths
+    if (marker === 0x01 ||
+        (marker >= 0xD0 && marker <= 0xD7)) continue;
+
+    if (position + 2 > size) break;
+
+    const length = view.getUint16(position);
+
+    if (length < 2 || position + length > size) break;
+
+    const start = position + 2;
+    const end = position + length;
+
+    // APP1 segment containing EXIF
+    if (marker === 0xE1 &&
+        textAt(start, 4) === "Exif" &&
+        start + 6 <= end) {
+
+      const base = start + 6;
+
+      if (base + 8 > end) break;
+
+      const order = view.getUint16(base);
+
+      if (order !== 0x4949 && order !== 0x4D4D)
+        return null;
+
+      const little = order === 0x4949;
+
+      function get16(offset) {
+
+        if (offset < base || offset + 2 > end)
+          throw new Error("Invalid EXIF offset");
+
+        return view.getUint16(offset, little);
+
+      }
+
+      function get32(offset) {
+
+        if (offset < base || offset + 4 > end)
+          throw new Error("Invalid EXIF offset");
+
+        return view.getUint32(offset, little);
+
+      }
+
+      if (get16(base + 2) !== 42) return null;
+
+      function readIFD(relativeOffset) {
+
+        const offset = base + relativeOffset;
+
+        if (offset < base || offset + 2 > end)
+          return {};
+
+        const count = get16(offset);
+
+        if (count > 256 ||
+            offset + 2 + count * 12 + 4 > end)
+          return {};
+
+        const tags = {};
+
+        for (let i = 0; i < count; i++) {
+
+          const entry = offset + 2 + i * 12;
+
+          const tag = get16(entry);
+          const type = get16(entry + 2);
+          const amount = get32(entry + 4);
+
+          // ASCII
+          if (type === 2 && amount > 0 && amount < 65536) {
+
+            const valueOffset = amount <= 4
+              ? entry + 8
+              : base + get32(entry + 8);
+
+            if (valueOffset >= base &&
+                valueOffset + amount <= end) {
+
+              tags[tag] = textAt(valueOffset, amount);
+
+            }
+
+          }
+
+          // EXIF subdirectory pointer
+          if (tag === 0x8769 && type === 4 && amount === 1) {
+
+            tags[tag] = get32(entry + 8);
+
+          }
+
+        }
+
+        return tags;
+
+      }
+
+      const mainIFD = readIFD(get32(base + 4));
+
+      const exifIFD = mainIFD[0x8769]
+        ? readIFD(mainIFD[0x8769])
+        : {};
+
+      // EXIF DateTimeOriginal, then DateTimeDigitized
+      const rawDate =
+        exifIFD[0x9003] ||
+        exifIFD[0x9004] ||
+        "";
+
+      let date = "";
+
+      const match = rawDate.match(
+        /^(\d{4}):(\d{2}):(\d{2})/
+      );
+
+      if (match) {
+
+        const candidate =
+          `${match[1]}-${match[2]}-${match[3]}`;
+
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+        const day = Number(match[3]);
+
+        const parsed = new Date(Date.UTC(year, month - 1, day));
+
+        if (year >= 1900 &&
+            parsed.getUTCFullYear() === year &&
+            parsed.getUTCMonth() === month - 1 &&
+            parsed.getUTCDate() === day) {
+
+          date = candidate;
+
+        }
+
+      }
+
+      // Camera manufacturer and model
+      const make = (mainIFD[0x010F] || "").trim();
+      const model = (mainIFD[0x0110] || "").trim();
+
+      let camera = model || make;
+
+      if (make && model &&
+          !model.toLowerCase().startsWith(make.toLowerCase())) {
+
+        camera = `${make} ${model}`;
+
+      }
+
+      return {
+        date,
+        camera
+      };
+
+    }
+
+    position = end;
+
+  }
+
+  return null;
+
+}
+
+window.onload = async () => {
+  await JournalStore.ensureAccess();
+  if (!editId) return;
+  
+  const data = JournalStore.getData();
+  const e = data.entries.find(x => x.id === editId);
+  if (!e) return;
+  
+  document.getElementById("pageTitle").textContent = "Edit Memory";
+  form = { file: null, oldFileName: e.fileName || "", fileName: e.fileName || "", type: e.type, grad: e.grad, emoji: e.emoji, rating: e.rating };
+
+  if (e.fileName) {
+    const url = await JournalStore.getMediaURL(e.fileName);
+    preview.style.display = "block";
+    if (e.type === "video") { previewVideo.style.display = "block"; previewVideo.src = url; }
+    else { previewImg.style.display = "block"; previewImg.src = url; }
+    document.getElementById("dzIcon").style.display = "none"; document.getElementById("dzTitle").style.display = "none"; document.querySelector(".dz-sub").style.display = "none";
+    document.getElementById("fileName").innerHTML = `<span class="ftype">${e.type.toUpperCase()}</span> Saved on USB — replace optional`;
+  }
+  
+  document.getElementById("inTitle").value = e.title; document.getElementById("inDate").value = e.dateShot;
+  document.getElementById("inLocation").value = e.location; document.getElementById("inDevice").value = e.device;
+  document.getElementById("blurCover").checked = e.blurCover === true; updateBlurPreview(); document.getElementById("inTags").value = (e.tags || []).join(", ");
+  document.getElementById("inComment").value = e.comment || "";
+  document.querySelectorAll("#starInput button").forEach(b => b.classList.toggle("on", +b.dataset.v <= form.rating));
+  document.getElementById("starLbl").textContent = form.rating ? ["","Poor","Okay","Good","Great","Masterpiece ⭐"][form.rating] : "Tap to rate";
+  [...emojiGrid.children].forEach(c => c.classList.toggle("on", c.textContent === form.emoji));
+};
+
+async function save() {
+  const title = document.getElementById("inTitle").value.trim(); const date = document.getElementById("inDate").value;
+  if (!title) { shake(document.getElementById("inTitle")); return; }
+  if (!date) { shake(document.getElementById("inDate")); return; }
+  if (!editId && !form.file) { dz.style.borderColor = "#ff453a"; setTimeout(() => dz.style.borderColor = "", 900); return; }
+
+  const data = JournalStore.getData();
+  let finalFileName = form.fileName;
+
+  if (form.file) {
+    if (editId && form.oldFileName) await JournalStore.deleteMedia(form.oldFileName);
+    finalFileName = await JournalStore.writeMedia(form.file);
+  }
+
+  const tags = document.getElementById("inTags").value.split(",").map(t => t.trim().toLowerCase().replace(/\s+/g, "-")).filter(Boolean).slice(0, 10);
+  const payload = {
+    title, type: form.type, grad: form.grad, emoji: form.emoji, fileName: finalFileName,
+    dateShot: date, location: document.getElementById("inLocation").value.trim() || "—",
+    device: document.getElementById("inDevice").value.trim() || "—", blurCover: document.getElementById("blurCover").checked,
+    rating: form.rating, tags, comment: document.getElementById("inComment").value.trim(), addedAt: Date.now()
+  };
+
+  if (editId) {
+    payload.id = editId;
+    const idx = data.entries.findIndex(x => x.id === editId);
+    if (idx !== -1) { payload.addedAt = data.entries[idx].addedAt; data.entries[idx] = payload; }
+  } else {
+    payload.id = Date.now() + Math.floor(Math.random() * 1000);
+    data.entries.push(payload);
+  }
+
+  // Save the memory first
+await JournalStore.save();
+
+// Play SFX only after successful saving
+sfxSave.currentTime = 0;
+sfxSave.play().catch(() => {});
+
+// Show success notification
+const toast = document.getElementById("toast");
+toast.classList.add("show");
+  setTimeout(() => window.location.href = `photo.html?id=${payload.id}`, 800);
+}
+
+function shake(el) { el.style.borderColor = "#ff453a"; el.animate([{transform:"translateX(0)"},{transform:"translateX(-7px)"},{transform:"translateX(6px)"},{transform:"translateX(-4px)"},{transform:"translateX(0)"}],{ duration: 380 }); setTimeout(() => el.style.borderColor = "", 900); el.focus(); }
+// Footer save button
+document.getElementById("saveBtn").onclick = save;
+
+
+// ============ MEMORY INSPIRATION ENGINE ============
+
+const inspireBtn = document.getElementById("inspireBtn");
+const journal = document.getElementById("inComment");
+
+// Creative prompts
+const memoryPrompts = [
+
+  "🎬 If this memory were a movie, what would its title be?",
+
+  "🕰️ What would your future self think about this moment?",
+
+  "😂 What happened five seconds before this picture that nobody knows?",
+
+  "🌌 If you could freeze one second from this day, which would it be?",
+
+  "🎵 What song would play in the background of this memory?",
+
+  "👀 What is the funniest detail hiding in this moment?",
+
+  "💭 What did you feel that a camera could never capture?",
+
+  "🚀 Imagine telling this story to an alien. Where would you begin?",
+
+  "✨ What made this ordinary moment unexpectedly special?",
+
+  "📖 If this were a chapter in your life, what would you call it?"
+
+];
+
+let lastPrompt = -1;
+
+inspireBtn.addEventListener("click", () => {
+
+  // Avoid showing the same prompt twice in a row
+  let index;
+
+  do {
+    index = Math.floor(Math.random() * memoryPrompts.length);
+  } while (index === lastPrompt);
+
+  lastPrompt = index;
+
+  const prompt = memoryPrompts[index];
+
+  // Never overwrite existing journal content
+  journal.placeholder = prompt;
+
+  // Animate button
+  inspireBtn.classList.remove("active");
+  void inspireBtn.offsetWidth;
+  inspireBtn.classList.add("active");
+
+  // Animate textarea
+  journal.classList.remove("prompt-pop");
+  void journal.offsetWidth;
+  journal.classList.add("prompt-pop");
+
+  // Scroll to the writing area
+  journal.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+  // Focus without scrolling again
+  try {
+    journal.focus({ preventScroll: true });
+  } catch {
+    journal.focus();
+  }
+
+});
+document.addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") save(); });
+</script>
+</body>
+</html>
