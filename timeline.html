@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>rashd's vault — Timeline</title>
+<style>
+  :root {
+    --bg: #0a0a0f; --card-bg: rgba(255, 255, 255, 0.05); --card-border: rgba(255, 255, 255, 0.10);
+    --glass: rgba(255, 255, 255, 0.06); --glass-hover: rgba(255, 255, 255, 0.11);
+    --text-primary: #f5f5f7; --text-secondary: rgba(245, 245, 247, 0.55); --text-faint: rgba(245, 245, 247, 0.35);
+    --accent: #0a84ff; --accent-glow: rgba(10, 132, 255, 0.35); --star: #ffd60a; --blur: saturate(160%) blur(24px);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif; min-height: 100vh; background: var(--bg); color: var(--text-primary); }
+  .blob { position: fixed; border-radius: 50%; filter: blur(130px); opacity: 0.26; pointer-events: none; animation: drift 22s ease-in-out infinite; }
+  .blob.b1 { width: 560px; height: 560px; background: #3a2d8f; top: -18%; left: -10%; }
+  .blob.b2 { width: 480px; height: 480px; background: #0a3d62; bottom: -20%; right: -10%; animation-delay: -8s; }
+  .blob.b3 { width: 380px; height: 380px; background: #6d1b5e; top: 45%; left: 55%; opacity: 0.2; animation-delay: -14s; }
+  @keyframes drift { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(50px,-40px) scale(1.1); } }
+  body::after { content: ""; position: fixed; inset: 0; z-index: 0; background-image: radial-gradient(rgba(255,255,255,0.022) 1px, transparent 1px); background-size: 26px 26px; pointer-events: none; }
+
+  .topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px 36px; background: rgba(10,10,15,0.75); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .topbar .left { display: flex; align-items: center; gap: 18px; }
+  .topbar h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; background: linear-gradient(180deg, #ffffff 35%, rgba(255,255,255,0.55)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .view-toggle { display: flex; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); border-radius: 11px; padding: 3px; gap: 3px; }
+  .view-toggle a { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); text-decoration: none; padding: 6px 14px; border-radius: 8px; transition: all 0.15s; }
+  .view-toggle a.on { background: var(--accent); color: #fff; box-shadow: 0 2px 10px var(--accent-glow); }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 12px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-primary); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.18s ease; }
+  .btn:hover { background: var(--glass-hover); transform: translateY(-1px); }
+
+  .timeline { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 44px 36px 90px; }
+  .timeline::before { content: ""; position: absolute; top: 0; bottom: 0; left: 59px; width: 1.5px; background: linear-gradient(180deg, transparent, rgba(255,255,255,0.14) 6%, rgba(255,255,255,0.14) 94%, transparent); }
+  .month-block { position: relative; margin-bottom: 52px; }
+  .month-node { position: absolute; left: 48px; top: 4px; width: 23px; height: 23px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); box-shadow: 0 0 16px var(--accent-glow), inset 0 0 6px rgba(10,132,255,0.4); z-index: 2; animation: nodeIn 0.6s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes nodeIn { from { transform: scale(0); } to { transform: scale(1); } }
+  .month-header { padding-left: 92px; margin-bottom: 20px; display: flex; align-items: baseline; gap: 14px; animation: slideIn 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: translateX(0); } }
+  .month-header .m-name { font-size: 27px; font-weight: 700; letter-spacing: -0.6px; background: linear-gradient(180deg, #ffffff 35%, rgba(255,255,255,0.55)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .month-header .m-count { transform: translateY(-5px); font-size: 12px; font-weight: 600; color: var(--text-faint); background: var(--glass); border: 1px solid rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 999px; }
+
+  /* ===== FIXED TIMELINE SCROLL VIEWPORT ===== */
+
+.month-viewport {
+  position: relative;
+
+  /* Permanently keep cards to the right of the timeline */
+  margin-left: 92px;
+  width: calc(100% - 92px);
+
+  /* Prevent cards from overlapping the vertical line */
+  overflow: hidden;
+
+  /* Smoothly fade cards at both edges */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 28px,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 28px,
+    black calc(100% - 28px),
+    transparent 100%
+  );
+}
+
+
+/* ===== INVISIBLE HORIZONTAL SCROLLER ===== */
+
+.month-row {
+  display: flex;
+  gap: 16px;
+
+  /* Padding is no longer inside the scrolling area */
+  padding: 8px 28px 12px;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+
+  /* Firefox */
+  scrollbar-width: none;
+
+  /* Prevent unnecessary layout expansion */
+  min-width: 0;
+  overscroll-behavior-x: contain;
+}
+
+
+/* Chrome, Safari and Edge */
+.month-row::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* Cards snap neatly into place */
+.month-row .t-card {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  flex-shrink: 0;
+}
+  .t-card { position: relative; flex: 0 0 230px; border-radius: 16px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--card-bg); border: 1px solid var(--card-border); cursor: pointer; scroll-snap-align: start; transition: transform 0.26s cubic-bezier(0.22,1,0.36,1), box-shadow 0.26s, border-color 0.26s; animation: cardIn 0.55s cubic-bezier(0.22,1,0.36,1) both; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+  .t-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(255,255,255,0.22); box-shadow: 0 20px 44px rgba(0,0,0,0.55); }
+  .t-card .thumb { position: absolute; inset: 0; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 46px; transition: transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+  .t-card:hover .thumb { transform: scale(1.07); }
+  .t-card .overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 34px 13px 11px; background: linear-gradient(180deg, transparent, rgba(5,5,10,0.88)); }
+  .overlay .t-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+  .overlay .t-sub { font-size: 11px; color: rgba(245,245,247,0.6); display: flex; align-items: center; gap: 6px; }
+  .overlay .t-sub .stars { color: var(--star); font-size: 10.5px; letter-spacing: 1px; }
+  .t-card .b-video { position: absolute; top: 10px; right: 10px; font-size: 10px; font-weight: 800; letter-spacing: 0.6px; color: #fff; background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.2); padding: 4px 9px; border-radius: 999px; backdrop-filter: blur(8px); }
+  .t-card .b-cmt { position: absolute; top: 10px; left: 10px; font-size: 11px; font-weight: 700; background: rgba(10,132,255,0.75); border: 1px solid rgba(255,255,255,0.25); color: #fff; padding: 3px 8px; border-radius: 999px; backdrop-filter: blur(8px); }
+  .empty { text-align: center; padding: 100px 20px; color: var(--text-faint); }
+  .empty .big { font-size: 54px; margin-bottom: 14px; }
+  .empty h2 { color: var(--text-secondary); font-size: 18px; margin-bottom: 6px; }
+  .to-top { position: fixed; bottom: 28px; right: 28px; z-index: 60; width: 46px; height: 46px; border-radius: 50%; background: var(--glass); border: 1px solid rgba(255,255,255,0.14); backdrop-filter: var(--blur); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transform: translateY(12px); transition: all 0.3s ease; }
+  .to-top.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .to-top:hover { background: var(--glass-hover); }
+
+  /* Strong blur only: no veil, dots, particles or cover text. */
+  .is-covered .thumb { filter:blur(50px); transform:scale(1.12); }
+  .is-covered:hover .thumb { transform:scale(1.12); }
+  @media(prefers-reduced-motion:reduce) { .thumb { transition:none !important; } }
+  
+/* ============ METALLIC MEDIA SELECTION ============ */
+
+/* Selected image: silver metallic border and glow */
+.card.media-selected,
+.t-card.media-selected {
+  border: 2px solid #dce2ea !important;
+
+  outline: 2px solid #89939f !important;
+  outline-offset: -5px;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.65),
+    inset 0 0 14px rgba(225,232,240,0.12),
+    0 0 0 1px rgba(230,236,245,0.75),
+    0 0 12px rgba(185,198,215,0.55),
+    0 0 28px rgba(160,178,200,0.30) !important;
+}
+
+/* Preserve the metallic glow while hovering */
+.card.media-selected:hover,
+.t-card.media-selected:hover {
+  border-color: #f2f5fa !important;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.75),
+    inset 0 0 14px rgba(225,232,240,0.15),
+    0 0 0 1px rgba(230,236,245,0.85),
+    0 0 16px rgba(185,198,215,0.65),
+    0 0 32px rgba(160,178,200,0.38) !important;
+}
+
+/* One selection badge in the top-left corner */
+.selection-check {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 30;
+
+  width: 34px;
+  height: 34px;
+
+  display: block;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transform: scale(0.75);
+  transform-origin: center;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s ease;
+}
+
+/* SVG fills its container */
+.selection-check svg {
+  display: block;
+
+  width: 34px;
+  height: 34px;
+
+  overflow: visible;
+
+  filter:
+    drop-shadow(0 0 4px rgba(235,242,255,0.7))
+    drop-shadow(0 0 9px rgba(175,190,210,0.4));
+}
+
+/* Reveal exactly one badge when selected */
+.media-selected .selection-check {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+/* Right-click menu */
+.media-context-menu {
+  position: fixed;
+  z-index: 99999;
+
+  display: none;
+  min-width: 190px;
+
+  padding: 7px;
+  border-radius: 14px;
+
+  background: rgba(23, 27, 35, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.media-context-menu.visible {
+  display: grid;
+  gap: 4px;
+}
+
+.media-context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+
+  border: none;
+  border-radius: 10px;
+
+  padding: 12px 14px;
+
+  background: transparent;
+  color: #f5f5f7;
+
+  text-align: left;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.media-context-menu button svg {
+  width: 19px;
+  height: 19px;
+
+  flex-shrink: 0;
+
+  stroke: currentColor;
+}
+
+.media-context-menu button:hover {
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+}
+
+.media-context-menu button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.media-context-menu.visible {
+  display: grid;
+  gap: 4px;
+}
+
+.media-context-menu button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 13px;
+
+  background: transparent;
+  color: #f5f5f7;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.media-context-menu button:hover {
+  background: rgba(255,255,255,.1);
+}
+
+.media-context-menu button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Floating toolbar */
+
+.media-selection-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translate(-50%, 25px);
+
+  z-index: 9998;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 16px;
+  border-radius: 17px;
+
+  background: rgba(22,28,37,.95);
+  border: 1px solid rgba(255,255,255,.15);
+
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+
+  box-shadow: 0 20px 55px rgba(0,0,0,.55);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition: opacity .25s, transform .25s, visibility .25s;
+}
+
+.media-selection-toolbar.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.media-selection-toolbar span {
+  white-space: nowrap;
+  color: #a8b7c9;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.media-selection-toolbar button {
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+
+  background: rgba(255,255,255,.08);
+  color: white;
+
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.media-selection-toolbar button:hover {
+  background: rgba(255,255,255,.16);
+}
+
+.media-selection-toolbar .danger-action {
+  background: rgba(255,69,58,.13);
+  color: #ff7770;
+  border-color: rgba(255,69,58,.28);
+}
+</style>
+</head>
+<body>
+
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+
+  <header class="topbar">
+  <div class="left">
+    <h1>Timeline</h1>
+    <div class="view-toggle">
+      <a href="gallery.html">Grid</a>
+      <a href="timeline.html" class="on">Timeline</a>
+    </div>
+  </div>
+</header>
+
+  <main class="timeline" id="timeline"></main>
+  <div class="empty" id="empty" style="display:none;"><div class="big">
+    <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="140.8"
+  height="114.8"
+  viewBox="0 0 704 574"
+  fill="none"
+>
+  <g
+    stroke="#808080"
+    stroke-width="14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <!-- Calendar outer body -->
+    <path d="
+      M224 174
+      V129
+      C224 116 234 105 247 105
+      H532
+      C545 105 555 115 555 128
+      V384
+      C555 397 545 407 532 407
+      H247
+      C234 407 224 397 224 384
+      V366
+    "/>
+
+    <!-- Calendar top divider -->
+    <path d="M224 174H555"/>
+
+    <!-- Binding rings -->
+    <path d="M294 80V129"/>
+    <path d="M485 80V129"/>
+
+    <!-- Curved calendar page -->
+    <path d="
+      M224 174
+      H555
+      C545 240 516 302 473 351
+      C463 361 450 366 435 366
+      H147
+      C138 366 133 356 139 349
+      C184 296 211 237 224 174
+      Z
+    "/>
+  </g>
+</svg>
+  </div><h2>Your timeline is empty</h2><p>Add a memory and it will appear here, month by month.</p></div>
+  <button class="to-top" id="toTop" aria-label="Back to top"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+
+<script src="storage.js"></script>
+<script src="media-actions.js"></script>
+<script>
+if (!sessionStorage.getItem("rshdKey")) { window.location.replace("lockscreen.html"); }
+
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+window.onload = async () => {
+  await JournalStore.ensureAccess();
+  const data = JournalStore.getData();
+  const entries = data.entries.sort((a, b) => a.dateShot.localeCompare(b.dateShot));
+
+  const tl = document.getElementById("timeline");
+  if (!entries.length) { document.getElementById("empty").style.display = "block"; return; }
+
+  const groups = new Map();
+  entries.forEach(e => {
+    const key = e.dateShot.slice(0, 7);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(e);
+  });
+
+  const keys = [...groups.keys()].sort().reverse();
+  const GRADS = ["linear-gradient(135deg,#667eea,#764ba2)","linear-gradient(135deg,#f093fb,#f5576c)","linear-gradient(135deg,#4facfe,#00f2fe)"];
+
+  keys.forEach((key, gi) => {
+    const list = groups.get(key).sort((a,b) => b.dateShot.localeCompare(a.dateShot));
+    const d = new Date(key + "-02T00:00:00");
+    const block = document.createElement("div");
+    block.className = "month-block";
+
+    block.innerHTML = `<div class="month-node" style="animation-delay:${gi * 0.08}s"></div><div class="month-header" style="animation-delay:${gi * 0.08}s"><span class="m-name">${d.toLocaleDateString([], { month: "long", year: "numeric" })}</span><span class="m-count">${list.length} ${list.length === 1 ? "memory" : "memories"}</span></div>`;
+
+    const row = document.createElement("div"); row.className = "month-row";
+
+    list.forEach(async (e, i) => {
+      const card = document.createElement("div");
+      card.className = "t-card";
+      if (e.blurCover === true) { card.classList.add("is-covered"); card.setAttribute("aria-label", "Blurred memory; click to reveal"); } card.style.animationDelay = `${gi * 0.08 + i * 0.05}s`;
+
+      const thumb = document.createElement("div"); thumb.className = "thumb";
+      
+      if (e.fileName) {
+        const url = await JournalStore.getMediaURL(e.fileName);
+        if (url && e.type !== "video") thumb.style.backgroundImage = `url("${url}")`;
+        else { thumb.style.background = e.grad || GRADS[i % GRADS.length]; thumb.textContent = e.emoji || "🖼️"; }
+      } else {
+        thumb.style.background = e.grad || GRADS[i % GRADS.length]; thumb.textContent = e.emoji || "🖼️";
+      }
+      card.appendChild(thumb);
+
+      if (e.type === "video") card.insertAdjacentHTML("beforeend", `<span class="b-video">▶ VIDEO</span>`);
+      if (e.comment) card.insertAdjacentHTML("beforeend", `<span class="b-cmt">💬</span>`);
+
+      const day = new Date(e.dateShot + "T00:00:00").toLocaleDateString([], { day: "numeric", month: "short" });
+      card.insertAdjacentHTML("beforeend", `<div class="overlay"><div class="t-title">${esc(e.title)}</div><div class="t-sub"><span>${day}</span><span>·</span><span>${esc(e.location)}</span><span class="stars">${"★".repeat(e.rating)}</span></div></div>`);
+      card.onclick = () => {
+        if (card.classList.contains("is-covered")) {
+          card.classList.remove("is-covered");
+          card.removeAttribute("aria-label");
+          return; // First click only reveals; second click opens detail.
+        }
+        window.location.href = `photo.html?id=${e.id}`;
+      };
+      // Enable right-click menu and selection
+      MediaActions.attach(card, e);
+      row.appendChild(card);
+    });
+
+   // Create a fixed viewport for this month's cards
+const viewport = document.createElement("div");
+viewport.className = "month-viewport";
+
+// The row scrolls inside the fixed viewport
+viewport.appendChild(row);
+
+// Add the viewport to the month section
+block.appendChild(viewport);
+tl.appendChild(block);
+  });
+};
+
+const toTop = document.getElementById("toTop");
+window.addEventListener("scroll", () => { toTop.classList.toggle("show", window.scrollY > 500); });
+toTop.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+</script>
+</body>
+</html>
